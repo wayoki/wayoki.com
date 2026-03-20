@@ -17,6 +17,14 @@
 
             <div class="loading">
                 <span id="loading"></span>
+                <button class="start-button" type="button" hidden>
+                    <span class="start-button-label" data-text="[START]">[START]</span>
+                </button>
+                <div class="language-picker" hidden aria-label="Choose language">
+                    <button class="language-option" type="button" data-lang="ru">РУС</button>
+                    <span class="language-divider" aria-hidden="true">/</span>
+                    <button class="language-option" type="button" data-lang="en">ENG</button>
+                </div>
             </div>
         </div>
     </section>
@@ -27,7 +35,7 @@
         rel="noopener noreferrer"
         aria-label="Open Wayoki Telegram"
     >
-        <span class="media-link-jp">私のメディア</span>
+        <span class="media-link-jp">私のソーシャルメディア</span>
     </a>
     <main class="content"></main>
     <script src="./index.js"></script>

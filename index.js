@@ -4,32 +4,92 @@ document.addEventListener("DOMContentLoaded", () => {
   const introContent = document.querySelector(".intro-content");
   const typing = document.querySelector(".typing");
   const loading = document.querySelector(".loading");
+  const startButton = document.querySelector(".start-button");
+  const languagePicker = document.querySelector(".language-picker");
+  const languageOptions = document.querySelectorAll(".language-option");
   const cursor = document.querySelector(".cursor");
   const siteTarget = document.getElementById("site");
   const loadingTarget = document.getElementById("loading");
   const mediaLink = document.querySelector(".media-link");
+  const content = document.querySelector(".content");
 
-  const siteText = "WAYOKI.STORE";
+  const siteText = "WAYOKI.COM";
   const loadingText = "Loading";
-  const typingSpeed = 250;
+  const typingSpeed = 200;
   const loadingFrameDelay = 800;
   const jitterResetDelay = 130;
   const dotCycleDuration = loadingFrameDelay * 4;
-  const repeatedTransitionDelay = dotCycleDuration * 2;
   const initialTransitionDelay =
     (siteText.length + loadingText.length) * typingSpeed +
-    repeatedTransitionDelay;
+    dotCycleDuration;
   let isPhotoMode = false;
+  let isReadyToStart = false;
+  let hasEnteredMainScreen = false;
 
   let hasShownMediaLink = false;
+  let jitterTimeoutId = null;
+  let loadingTimeoutId = null;
+  let startTapTimeoutId = null;
+  let languageTapTimeoutId = null;
 
-  if (!intro || !introContent || !typing || !loading || !cursor || !siteTarget || !loadingTarget || !mediaLink) {
+  function armStartHover() {
+    document.body.classList.add("start-hover-enabled");
+  }
+
+  function clearStartTapState() {
+    if (startTapTimeoutId) {
+      clearTimeout(startTapTimeoutId);
+      startTapTimeoutId = null;
+    }
+
+    startButton.classList.remove("tap-hover-active");
+  }
+
+  function clearLanguageTapState() {
+    if (languageTapTimeoutId) {
+      clearTimeout(languageTapTimeoutId);
+      languageTapTimeoutId = null;
+    }
+
+    languageOptions.forEach((option) => {
+      option.classList.remove("tap-hover-active");
+    });
+  }
+
+  function isTouchLikeInteraction() {
+    return (
+      window.matchMedia("(hover: none)").matches ||
+      window.matchMedia("(pointer: coarse)").matches
+    );
+  }
+
+  if (
+    !intro ||
+    !introContent ||
+    !typing ||
+    !loading ||
+    !startButton ||
+    !languagePicker ||
+    !languageOptions.length ||
+    !cursor ||
+    !siteTarget ||
+    !loadingTarget ||
+    !mediaLink ||
+    !content
+  ) {
     return;
   }
 
   siteTarget.textContent = "";
   siteTarget.dataset.text = "";
   loadingTarget.textContent = "";
+  startButton.hidden = true;
+  languagePicker.hidden = true;
+  content.setAttribute("aria-hidden", "true");
+
+  function isIntroAnimating() {
+    return !isReadyToStart && !hasEnteredMainScreen;
+  }
 
   function applyResponsiveLayout() {
     const viewport = window.visualViewport;
@@ -73,7 +133,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function triggerCrtJitter() {
-    if (isPhotoMode) {
+    if (isPhotoMode || !isIntroAnimating()) {
       return;
     }
 
@@ -89,7 +149,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function triggerSplitGlitch() {
-    if (isPhotoMode) {
+    if (isPhotoMode || !isIntroAnimating()) {
       return;
     }
 
@@ -102,6 +162,10 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function triggerPhotoSplitGlitch() {
+    if (!isIntroAnimating()) {
+      return;
+    }
+
     siteTarget.classList.remove("photo-glitch-split");
     void siteTarget.offsetWidth;
     siteTarget.classList.add("photo-glitch-split");
@@ -111,6 +175,10 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function triggerPhotoJitter() {
+    if (!isIntroAnimating()) {
+      return;
+    }
+
     const x = (Math.random() - 0.5) * 4.2;
     const y = (Math.random() - 0.5) * 2.8;
     typing.style.translate = `${x.toFixed(2)}px ${y.toFixed(2)}px`;
@@ -136,17 +204,17 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  function scheduleModeCycle(delay) {
-    setTimeout(() => {
-      const nextPhotoMode = !isPhotoMode;
-      setPhotoMode(nextPhotoMode);
-      scheduleModeCycle(repeatedTransitionDelay);
-    }, delay);
-  }
-
   function scheduleJitter() {
+    if (!isIntroAnimating()) {
+      return;
+    }
+
     const nextDelay = 1100 + Math.random() * 1800;
-    setTimeout(() => {
+    jitterTimeoutId = setTimeout(() => {
+      if (!isIntroAnimating()) {
+        return;
+      }
+
       if (isPhotoMode) {
         triggerPhotoJitter();
       } else {
@@ -166,12 +234,65 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function startLoadingAnimation(frameIndex = 0) {
+    if (!isIntroAnimating()) {
+      return;
+    }
+
     const dots = ".".repeat(frameIndex);
     loadingTarget.textContent = loadingText + dots;
 
-    setTimeout(() => {
+    loadingTimeoutId = setTimeout(() => {
       startLoadingAnimation((frameIndex + 1) % 4);
     }, loadingFrameDelay);
+  }
+
+  function stopIntroTimers() {
+    if (jitterTimeoutId) {
+      clearTimeout(jitterTimeoutId);
+      jitterTimeoutId = null;
+    }
+
+    if (loadingTimeoutId) {
+      clearTimeout(loadingTimeoutId);
+      loadingTimeoutId = null;
+    }
+  }
+
+  function showStartButton() {
+    isReadyToStart = true;
+    stopIntroTimers();
+    setPhotoMode(true);
+    loadingTarget.textContent = "";
+    clearStartTapState();
+    clearLanguageTapState();
+    loading.classList.add("ready");
+    startButton.hidden = false;
+    document.body.classList.add("intro-ready");
+    document.body.classList.remove("start-hover-enabled");
+    window.addEventListener("pointermove", armStartHover, { once: true });
+  }
+
+  function showLanguagePicker() {
+    if (hasEnteredMainScreen) {
+      return;
+    }
+
+    hasEnteredMainScreen = true;
+    stopIntroTimers();
+    resetJitter();
+    setPhotoMode(true);
+    clearStartTapState();
+    clearLanguageTapState();
+    window.removeEventListener("pointermove", armStartHover);
+    startButton.hidden = true;
+    languagePicker.hidden = false;
+    loading.classList.add("language-mode");
+  }
+
+  function navigateToLanguage(languageCode) {
+    const targetUrl =
+      languageCode === "ru" ? "https://wayoki.com/ru" : "https://wayoki.com/en";
+    window.location.assign(targetUrl);
   }
 
   function typeText(target, value, onComplete, charIndex = 0) {
@@ -202,11 +323,51 @@ document.addEventListener("DOMContentLoaded", () => {
 
   scheduleJitter();
 
+  startButton.addEventListener("click", (event) => {
+    if (!isTouchLikeInteraction()) {
+      showLanguagePicker();
+      return;
+    }
+
+    event.preventDefault();
+
+    if (hasEnteredMainScreen || startTapTimeoutId) {
+      return;
+    }
+
+    startButton.classList.add("tap-hover-active");
+    startTapTimeoutId = setTimeout(() => {
+      startTapTimeoutId = null;
+      showLanguagePicker();
+    }, 500);
+  });
+  languageOptions.forEach((option) => {
+    option.addEventListener("click", (event) => {
+      if (!isTouchLikeInteraction()) {
+        navigateToLanguage(option.dataset.lang);
+        return;
+      }
+
+      event.preventDefault();
+
+      if (languageTapTimeoutId) {
+        return;
+      }
+
+      clearLanguageTapState();
+      option.classList.add("tap-hover-active");
+      languageTapTimeoutId = setTimeout(() => {
+        languageTapTimeoutId = null;
+        navigateToLanguage(option.dataset.lang);
+      }, 500);
+    });
+  });
+
   typeText(siteTarget, siteText, () => {
     typeText(loadingTarget, loadingText, () => {
       setTimeout(() => startLoadingAnimation(1), loadingFrameDelay);
     });
   });
 
-  scheduleModeCycle(initialTransitionDelay);
+  setTimeout(showStartButton, initialTransitionDelay);
 });
