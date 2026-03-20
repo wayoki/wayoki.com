@@ -1,4 +1,3 @@
-// Half of this was also ai generated :)
 document.addEventListener("DOMContentLoaded", () => {
   const intro = document.querySelector(".intro");
   const introContent = document.querySelector(".intro-content");
@@ -290,8 +289,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function navigateToLanguage(languageCode) {
-    const targetUrl =
-      languageCode === "ru" ? "https://wayoki.com/ru" : "https://wayoki.com/en";
+    const targetUrl = languageCode === "ru" ? "/ru/" : "/en/";
     window.location.assign(targetUrl);
   }
 

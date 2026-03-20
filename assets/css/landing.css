@@ -1,27 +1,7 @@
-/* Almost entirely ai generated ;) */
-
-@font-face {
-    font-family: "CustomFont";
-    src: url("./fonts/customFont.ttf") format("truetype");
-    font-style: normal;
-    font-weight: 400;
-    font-display: swap;
-}
-
-@font-face {
-    font-family: "CustomJapaneseFont";
-    src: url("./fonts/customJapaneseFont.ttf") format("truetype");
-    font-style: normal;
-    font-weight: 400;
-    font-display: swap;
-}
-
 html, body {
-    margin: 0;
-    padding: 0;
     width: 100%;
     min-height: 100vh;
-    background: #000;
+    background: var(--color-bg-dark);
     overflow: hidden;
 }
 
@@ -29,8 +9,7 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    color: #fff;
-    font-family: "CustomFont", monospace;
+    color: var(--color-text-light);
     transition: background-color 1800ms cubic-bezier(0.22, 1, 0.36, 1), color 1800ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
@@ -80,7 +59,7 @@ body::after {
     overflow: hidden;
     background:
         radial-gradient(circle at center, rgba(255, 255, 255, 0.025) 0%, rgba(0, 0, 0, 0) 48%),
-        #000;
+        var(--color-bg-dark);
     transition: background 1800ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
@@ -130,9 +109,9 @@ body::after {
 .typing {
     position: relative;
     display: inline-block;
-    color: #fff;
+    color: var(--color-text-light);
     font-size: 56px;
-    font-family: "CustomFont", monospace;
+    font-family: var(--font-base);
     line-height: 1;
     letter-spacing: 0.05em;
     white-space: nowrap;
@@ -178,7 +157,7 @@ body::after {
     width: 12px;
     height: 1em;
     margin-left: 8px;
-    background: #fff;
+    background: var(--color-text-light);
     box-shadow: 0 0 8px rgba(255, 255, 255, 0.14);
     animation: blink 1.5s steps(1, end) infinite;
     transition: background-color 1800ms ease, box-shadow 1800ms ease;
@@ -193,7 +172,7 @@ body::after {
     min-height: 46px;
     color: rgba(255, 255, 255, 0.9);
     font-size: 24px;
-    font-family: "CustomFont", monospace;
+    font-family: var(--font-base);
     line-height: 1;
     letter-spacing: 0.08em;
     white-space: nowrap;
@@ -232,7 +211,7 @@ body::after {
     height: 100%;
     background: transparent;
     color: inherit;
-    font-family: "CustomFont", monospace;
+    font-family: var(--font-base);
     font-size: clamp(22px, 4vw, 30px);
     line-height: 1;
     letter-spacing: 0.1em;
@@ -296,7 +275,7 @@ body::after {
     position: relative;
     display: inline-block;
     color: inherit;
-    font-family: "CustomFont", monospace;
+    font-family: var(--font-base);
     text-shadow:
         0 0 1px rgba(0, 0, 0, 0.28),
         0 0 10px rgba(255, 255, 255, 0.46);
@@ -396,7 +375,7 @@ body.start-hover-enabled .start-button:hover,
 
 .language-option,
 .language-divider {
-    font-family: "CustomFont", monospace;
+    font-family: var(--font-base);
     font-size: clamp(20px, 3.8vw, 28px);
     line-height: 1;
     letter-spacing: 0.08em;
@@ -501,8 +480,7 @@ body.start-hover-enabled .start-button:hover,
     min-height: 100vh;
     opacity: 0;
     pointer-events: none;
-    background:
-        radial-gradient(circle at 50% 38%, rgba(255, 255, 255, 0.98) 0%, rgba(242, 240, 234, 0.94) 58%, rgba(229, 226, 218, 0.88) 100%);
+    background: var(--paper-gradient);
     transition: opacity 500ms ease;
 }
 
@@ -515,7 +493,7 @@ body.start-hover-enabled .start-button:hover,
     align-items: center;
     justify-content: center;
     padding: 8px 14px;
-    color: #d31717;
+    color: var(--color-accent);
     font-size: 22px;
     line-height: 1;
     letter-spacing: 0.08em;
@@ -541,7 +519,7 @@ body.start-hover-enabled .start-button:hover,
 
 .media-link-jp {
     display: inline-block;
-    font-family: "CustomJapaneseFont", "CustomFont", monospace;
+    font-family: var(--font-japanese);
     line-height: 1;
     text-transform: none;
     transform: translateY(-10px);
@@ -573,7 +551,7 @@ body.site-active .media-link {
 }
 
 body.photo-mode .media-link {
-    color: #d31717;
+    color: var(--color-accent);
     text-shadow:
         0 0 5px rgba(211, 23, 23, 0.16),
         0 0 12px rgba(255, 255, 255, 0.35);
@@ -612,8 +590,8 @@ body:not(.photo-mode) .media-link {
 }
 
 body.photo-mode {
-    background: #f6f4ef;
-    color: #050505;
+    background: var(--color-bg-paper);
+    color: var(--color-text-dark);
 }
 
 body.photo-mode::before {
@@ -653,8 +631,7 @@ body.photo-mode::after {
 }
 
 body.photo-mode .intro {
-    background:
-        radial-gradient(circle at 50% 38%, rgba(255, 255, 255, 0.98) 0%, rgba(242, 240, 234, 0.94) 58%, rgba(229, 226, 218, 0.88) 100%);
+    background: var(--paper-gradient);
 }
 
 body.photo-mode .intro::before,
@@ -665,7 +642,7 @@ body.photo-mode .intro::after {
 
 body.photo-mode .typing,
 body.photo-mode .loading {
-    color: #050505;
+    color: var(--color-text-dark);
     text-shadow:
         0 0 1px rgba(0, 0, 0, 0.2),
         0 0 14px rgba(255, 255, 255, 0.52);
@@ -683,17 +660,17 @@ body.photo-mode #site.photo-glitch-split::before {
 }
 
 body.photo-mode .cursor {
-    background: #050505;
+    background: var(--color-text-dark);
     box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.08);
 }
 
 body.photo-mode .content {
-    background: #f6f4ef;
+    background: var(--color-bg-paper);
 }
 
 body.site-active {
-    background: #f6f4ef;
-    color: #050505;
+    background: var(--color-bg-paper);
+    color: var(--color-text-dark);
 }
 
 body.site-active::before,
@@ -717,8 +694,7 @@ body.site-active .intro-content {
 body.site-active .content {
     opacity: 1;
     pointer-events: auto;
-    background:
-        radial-gradient(circle at 50% 38%, rgba(255, 255, 255, 0.98) 0%, rgba(242, 240, 234, 0.94) 58%, rgba(229, 226, 218, 0.88) 100%);
+    background: var(--paper-gradient);
 }
 
 @keyframes blink {
