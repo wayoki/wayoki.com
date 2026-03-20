@@ -3,14 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="./logo.png">
     <link rel="stylesheet" href="./index.css">
-    <script src="./index.js" defer></script>
     <title>WAYOKI!!!</title>
 </head>
 <body>
-    <div class="title">
-        <img src="./wayoki.png" alt="Fun Pic" class="pic">
-        <a href="https://t.me/wayoki" class="link" id="laugh-link">АХ</a>
-    </div>
+    <section class="intro">
+        <div class="intro-content">
+            <div class="typing">
+                <span id="site" data-text=""></span>
+                <span class="cursor" aria-hidden="true"></span>
+            </div>
+
+            <div class="loading">
+                <span id="loading"></span>
+            </div>
+        </div>
+    </section>
+    <a
+        class="media-link"
+        href="https://t.me/wayoki"
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="Open Wayoki Telegram"
+    >
+        <span class="media-link-jp">私のメディア</span>
+    </a>
+    <main class="content"></main>
+    <script src="./index.js"></script>
 </body>
 </html>
