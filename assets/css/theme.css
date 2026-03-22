@@ -1,0 +1,252 @@
+/* Общие брендовые токены */
+:root,
+html[data-theme="light"] {
+    /* Акцентный цвет для ссылок, активных действий и брендовых деталей */
+    --color-accent: #d31717; /* Основной акцент */
+    --color-accent-hover: #d31717; /* Акцент при наведении */
+
+    /* Вспомогательные цвета для SVG-маски в иконке переключателя темы */
+    --color-mask-visible: #fff; /* Видимая часть маски */
+    --color-mask-hidden: #000; /* Вырезаемая часть маски */
+
+    /* Зарезервированные семантические цвета состояний */
+    --color-success: #2f7d4d; /* Успешное состояние */
+    --color-warning: #a56b1f; /* Предупреждение */
+    --color-danger: #b92a2a; /* Ошибка / опасное действие */
+
+    /* Слои фона локализованных страниц */
+    --color-bg: #f8f6f1; /* Основной фон страницы */
+    --color-bg-secondary: #f1ede5; /* Второй слой фонового градиента */
+    --color-bg-tertiary: #ebe7de; /* Третий слой фонового градиента */
+    --color-bg-highlight: rgba(255, 255, 255, 0.86); /* Верхняя мягкая светлая засветка */
+    --color-bg-glow: rgba(255, 255, 255, 0.24); /* Большое фоновое свечение */
+    --color-bg-accent: rgba(255, 255, 255, 0.14); /* Дополнительный акцентный блик на фоне */
+
+    /* Основные поверхности и карточки */
+    --color-surface: rgba(255, 255, 255, 0.54); /* Базовая полупрозрачная поверхность */
+    --color-surface-strong: rgba(255, 255, 255, 0.68); /* Более плотная поверхность */
+    --color-surface-elevated: rgba(246, 244, 239, 0.82); /* Поднятая светлая поверхность */
+    --color-card: var(--color-surface); /* Фон карточек */
+    --color-card-strong: var(--color-surface-strong); /* Усиленный фон крупных карточек */
+    --color-chip: rgba(255, 255, 255, 0.6); /* Фон чипов и компактных плашек */
+    --color-chip-hover: rgba(255, 255, 255, 0.76); /* Фон чипов при наведении */
+    --color-toggle-active: rgba(10, 9, 8, 0.1); /* Фон активного переключателя */
+
+    /* Основной, вторичный и приглушённый текст */
+    --color-text-primary: #0a0908; /* Основной текст */
+    --color-text-secondary: rgba(10, 9, 8, 0.74); /* Вторичный текст */
+    --color-text-muted: rgba(10, 9, 8, 0.56); /* Приглушённый текст и подписи */
+
+    /* Границы, разделители и внутренние линии */
+    --color-border: rgba(10, 9, 8, 0.12); /* Базовая граница */
+    --color-border-strong: rgba(10, 9, 8, 0.18); /* Усиленная граница */
+    --color-border-inset: rgba(255, 255, 255, 0.74); /* Внутренняя светлая линия */
+
+    /* Ссылки, активные кнопки и hover-состояния */
+    --color-link: rgba(10, 9, 8, 0.66); /* Цвет ссылок по умолчанию */
+    --color-link-hover: #0a0908; /* Цвет ссылок при наведении */
+
+    /* Оверлеи, подложки и глубина */
+    --color-overlay: rgba(10, 9, 8, 0.4); /* Затемняющая подложка модальных окон */
+    --shadow-soft: 0 18px 36px rgba(18, 15, 7, 0.05); /* Мягкая тень */
+    --shadow-medium: 0 14px 30px rgba(18, 15, 7, 0.04); /* Средняя тень */
+    --shadow-large: 0 30px 60px rgba(18, 15, 7, 0.06); /* Крупная тень */
+
+    /* Готовые фоновые градиенты для локализованных страниц */
+    --page-bg-gradient:
+        radial-gradient(circle at top, var(--color-bg-highlight) 0%, rgba(255, 255, 255, 0) 34%),
+        linear-gradient(180deg, var(--color-bg) 0%, var(--color-bg-secondary) 48%, var(--color-bg-tertiary) 100%); /* Главный фон страницы */
+    --page-backdrop-gradient:
+        radial-gradient(circle at 50% -12%, var(--color-bg-glow) 0%, rgba(255, 255, 255, 0) 42%),
+        radial-gradient(circle at 82% 12%, var(--color-bg-accent) 0%, rgba(255, 255, 255, 0) 22%); /* Декоративные фоновые блики */
+
+    /* Готовые стили для большой feature-плашки */
+    --feature-plaque-background:
+        linear-gradient(180deg, var(--color-card-strong), var(--color-card)),
+        var(--color-surface-elevated); /* Фон большой плашки проекта */
+    --feature-plaque-shadow:
+        var(--shadow-large),
+        inset 0 1px 0 var(--color-border-inset); /* Тень и внутренняя линия большой плашки */
+
+    /* Базовые цвета лендинга */
+    --landing-color-bg: #000; /* Основной фон стартового экрана */
+    --landing-color-text-primary: #fff; /* Основной светлый текст лендинга */
+    --landing-color-text-secondary: rgba(255, 255, 255, 0.9); /* Вторичный светлый текст лендинга */
+    --landing-color-pixel: #050505; /* Тёмные пиксельные маркеры и декоративные точки */
+    --landing-color-divider: rgba(5, 5, 5, 0.72); /* Разделитель между языками */
+
+    /* Бумажное / фото-состояние лендинга */
+    --landing-paper-bg: #f6f4ef; /* Фон бумажного режима */
+    --landing-paper-text: #050505; /* Текст бумажного режима */
+    --landing-paper-gradient:
+        radial-gradient(
+            circle at 50% 38%,
+            rgba(255, 255, 255, 0.98) 0%,
+            rgba(242, 240, 234, 0.94) 58%,
+            rgba(229, 226, 218, 0.88) 100%
+        ); /* Градиент бумажной подложки */
+
+    /* CRT-эффекты и атмосферные слои лендинга */
+    --landing-screen-grid:
+        repeating-linear-gradient(
+            to bottom,
+            rgba(255, 255, 255, 0.05) 0,
+            rgba(255, 255, 255, 0.05) 1px,
+            rgba(0, 0, 0, 0.05) 1px,
+            rgba(0, 0, 0, 0.05) 2px,
+            transparent 2px,
+            transparent 4px
+        ); /* Сетка экрана */
+    --landing-screen-vignette:
+        radial-gradient(
+            circle at center,
+            transparent 52%,
+            rgba(0, 0, 0, 0.22) 78%,
+            rgba(0, 0, 0, 0.5) 100%
+        ); /* Затемнение по краям экрана */
+    --landing-intro-background:
+        radial-gradient(circle at center, rgba(255, 255, 255, 0.025) 0%, rgba(0, 0, 0, 0) 48%),
+        var(--landing-color-bg); /* Фон стартового блока */
+    --landing-intro-sweep:
+        linear-gradient(
+            to bottom,
+            transparent 0%,
+            rgba(255, 255, 255, 0.04) 46%,
+            rgba(255, 255, 255, 0.08) 50%,
+            rgba(255, 255, 255, 0.04) 54%,
+            transparent 100%
+        ); /* Световой проход по экрану */
+    --landing-intro-flicker: rgba(255, 255, 255, 0.015); /* Лёгкое мерцание экрана */
+
+    /* Свечение типографики на лендинге */
+    --landing-hero-glow:
+        0 0 7px rgba(255, 255, 255, 0.24),
+        0 0 18px rgba(255, 255, 255, 0.1),
+        0 0 30px rgba(255, 255, 255, 0.05); /* Свечение главного заголовка */
+    --landing-hero-glitch-glow:
+        0 0 7px rgba(255, 255, 255, 0.18),
+        0 0 20px rgba(255, 255, 255, 0.06); /* Свечение глитч-слоя заголовка */
+    --landing-cursor-glow: 0 0 8px rgba(255, 255, 255, 0.14); /* Свечение курсора */
+    --landing-loading-glow:
+        0 0 4px rgba(255, 255, 255, 0.12),
+        0 0 10px rgba(255, 255, 255, 0.04); /* Свечение текста загрузки */
+
+    /* Кнопки и языковой выбор на лендинге */
+    --landing-start-glow:
+        0 0 2px rgba(0, 0, 0, 0.18),
+        0 0 12px rgba(255, 255, 255, 0.45); /* Базовое свечение кнопки Start */
+    --landing-start-label-glow:
+        0 0 1px rgba(0, 0, 0, 0.28),
+        0 0 10px rgba(255, 255, 255, 0.46); /* Свечение текста кнопки Start */
+    --landing-start-glitch-top:
+        -1px 0 0 rgba(211, 23, 23, 0.4),
+        -2px 0 0 rgba(5, 5, 5, 0.24); /* Верхний глитч-след текста кнопки */
+    --landing-start-glitch-bottom:
+        1px 0 0 rgba(5, 5, 5, 0.32),
+        2px 0 0 rgba(211, 23, 23, 0.22); /* Нижний глитч-след текста кнопки */
+    --landing-start-hover-glow:
+        0 0 2px rgba(0, 0, 0, 0.22),
+        0 0 18px rgba(255, 255, 255, 0.62); /* Свечение кнопки Start при наведении */
+    --landing-language-glow:
+        0 0 1px rgba(0, 0, 0, 0.24),
+        0 0 10px rgba(255, 255, 255, 0.4); /* Базовое свечение выбора языка */
+    --landing-language-hover-glow:
+        0 0 1px rgba(0, 0, 0, 0.3),
+        0 0 14px rgba(255, 255, 255, 0.52); /* Свечение выбора языка при наведении */
+    --landing-pixel-shadow:
+        0 -4px 0 var(--landing-color-pixel),
+        0 4px 0 var(--landing-color-pixel),
+        -4px 0 0 var(--landing-color-pixel),
+        4px 0 0 var(--landing-color-pixel),
+        -2px -2px 0 var(--landing-color-pixel),
+        2px -2px 0 var(--landing-color-pixel),
+        -2px 2px 0 var(--landing-color-pixel),
+        2px 2px 0 var(--landing-color-pixel); /* Пиксельная рамка вокруг элементов */
+
+    /* Акцентные свечения ссылки на соцсети */
+    --landing-media-link-glow:
+        0 0 8px rgba(211, 23, 23, 0.24),
+        0 0 18px rgba(211, 23, 23, 0.12); /* Базовое свечение ссылки */
+    --landing-media-link-photo-glow:
+        0 0 5px rgba(211, 23, 23, 0.16),
+        0 0 12px rgba(255, 255, 255, 0.35); /* Свечение ссылки в фото-режиме */
+    --landing-media-link-active-glow:
+        0 0 10px rgba(211, 23, 23, 0.3),
+        0 0 20px rgba(211, 23, 23, 0.2); /* Усиленное свечение ссылки в обычном режиме */
+
+    /* Текстуры и шум в бумажном / фото-режиме */
+    --landing-photo-noise:
+        radial-gradient(circle at 18% 24%, rgba(0, 0, 0, 0.24) 0 1px, transparent 1.5px),
+        radial-gradient(circle at 72% 68%, rgba(0, 0, 0, 0.2) 0 1px, transparent 1.6px),
+        radial-gradient(circle at 42% 78%, rgba(0, 0, 0, 0.16) 0 1px, transparent 1.3px),
+        radial-gradient(circle at 82% 16%, rgba(0, 0, 0, 0.18) 0 1px, transparent 1.4px),
+        repeating-linear-gradient(
+            90deg,
+            rgba(0, 0, 0, 0.08) 0 1px,
+            transparent 1px 5px,
+            rgba(0, 0, 0, 0.12) 5px 6px,
+            transparent 6px 13px
+        ),
+        repeating-linear-gradient(
+            0deg,
+            rgba(0, 0, 0, 0.05) 0 1px,
+            transparent 1px 6px,
+            rgba(0, 0, 0, 0.09) 6px 7px,
+            transparent 7px 14px
+        ),
+        linear-gradient(0deg, rgba(255, 255, 255, 0.54), rgba(255, 255, 255, 0.54)); /* Бумажная текстура с шумом */
+    --landing-photo-vignette:
+        radial-gradient(circle at center, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0) 58%),
+        radial-gradient(circle at center, rgba(0, 0, 0, 0.08) 78%, rgba(0, 0, 0, 0.18) 100%); /* Виньетка фото-режима */
+    --landing-photo-text-glow:
+        0 0 1px rgba(0, 0, 0, 0.2),
+        0 0 14px rgba(255, 255, 255, 0.52); /* Свечение текста в фото-режиме */
+    --landing-photo-cursor-outline: 0 0 0 1px rgba(0, 0, 0, 0.08); /* Контур курсора в фото-режиме */
+}
+
+html[data-theme="dark"] {
+    /* Слои фона локализованных страниц в тёмной теме */
+    --color-bg: #12110f; /* Основной фон страницы */
+    --color-bg-secondary: #12110f; /* Второй слой фонового градиента */
+    --color-bg-tertiary: #12110f; /* Третий слой фонового градиента */
+    --color-bg-highlight: rgba(255, 255, 255, 0); /* Верхняя засветка отключена */
+    --color-bg-glow: rgba(255, 255, 255, 0); /* Большое фоновое свечение отключено */
+    --color-bg-accent: rgba(255, 255, 255, 0); /* Дополнительный акцентный блик отключён */
+
+    /* Основные поверхности и карточки в тёмной теме */
+    --color-surface: rgba(23, 21, 18, 0.84); /* Базовая полупрозрачная поверхность */
+    --color-surface-strong: rgba(29, 27, 23, 0.92); /* Более плотная поверхность */
+    --color-surface-elevated: rgba(18, 17, 15, 0.9); /* Поднятая тёмная поверхность */
+    --color-card: var(--color-surface); /* Фон карточек */
+    --color-card-strong: var(--color-surface-strong); /* Усиленный фон крупных карточек */
+    --color-chip: rgba(23, 21, 18, 0.88); /* Фон чипов и компактных плашек */
+    --color-chip-hover: rgba(30, 28, 24, 0.96); /* Фон чипов при наведении */
+    --color-toggle-active: rgba(242, 238, 228, 0.12); /* Фон активного переключателя */
+
+    /* Основной, вторичный и приглушённый текст в тёмной теме */
+    --color-text-primary: #f2eee4; /* Основной текст */
+    --color-text-secondary: rgba(242, 238, 228, 0.84); /* Вторичный текст */
+    --color-text-muted: rgba(242, 238, 228, 0.68); /* Приглушённый текст и подписи */
+
+    /* Границы, разделители и внутренние линии в тёмной теме */
+    --color-border: rgba(242, 238, 228, 0.16); /* Базовая граница */
+    --color-border-strong: rgba(242, 238, 228, 0.24); /* Усиленная граница */
+    --color-border-inset: rgba(255, 255, 255, 0.05); /* Внутренняя светлая линия */
+
+    /* Ссылки и активные состояния в тёмной теме */
+    --color-link: rgba(242, 238, 228, 0.74); /* Цвет ссылок по умолчанию */
+    --color-link-hover: #fffdf7; /* Цвет ссылок при наведении */
+
+    /* Оверлеи и тени в тёмной теме */
+    --color-overlay: rgba(0, 0, 0, 0.56); /* Затемняющая подложка модальных окон */
+    --shadow-soft: 0 14px 28px rgba(0, 0, 0, 0.18); /* Мягкая тень */
+    --shadow-medium: 0 12px 24px rgba(0, 0, 0, 0.14); /* Средняя тень */
+    --shadow-large: 0 24px 48px rgba(0, 0, 0, 0.24); /* Крупная тень */
+
+    /* В тёмной теме дополнительное фоновое свечение отключено */
+    --page-backdrop-gradient: none; /* Без декоративных бликов на фоне */
+
+    /* В тёмной теме feature-плашка становится более плоской */
+    --feature-plaque-background: #1a1815; /* Фон большой плашки проекта */
+    --feature-plaque-shadow: var(--shadow-large); /* Тень большой плашки */
+}

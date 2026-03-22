@@ -17,12 +17,6 @@
 :root {
     --font-base: "CustomFont", monospace;
     --font-japanese: "CustomJapaneseFont", "CustomFont", monospace;
-    --color-bg-dark: #000;
-    --color-text-light: #fff;
-    --color-bg-paper: #f6f4ef;
-    --color-text-dark: #050505;
-    --color-accent: #d31717;
-    --paper-gradient: radial-gradient(circle at 50% 38%, rgba(255, 255, 255, 0.98) 0%, rgba(242, 240, 234, 0.94) 58%, rgba(229, 226, 218, 0.88) 100%);
 }
 
 *,

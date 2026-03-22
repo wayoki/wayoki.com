@@ -19,6 +19,7 @@
         })();
     </script>
     <link rel="icon" type="image/png" href="/assets/img/logo.png">
+    <link rel="stylesheet" href="/assets/css/theme.css">
     <link rel="stylesheet" href="/assets/css/base.css">
     <link rel="stylesheet" href="/assets/css/localized.css">
     <script src="/assets/js/localized-home.js" defer></script>
@@ -58,8 +59,8 @@
                     <svg class="theme-icon theme-icon-moon" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
                         <defs>
                             <mask id="theme-moon-mask-en">
-                                <rect width="16" height="16" fill="white"></rect>
-                                <circle cx="10.8" cy="5.9" r="4.8" fill="black"></circle>
+                                <rect width="16" height="16" fill="var(--color-mask-visible)"></rect>
+                                <circle cx="10.8" cy="5.9" r="4.8" fill="var(--color-mask-hidden)"></circle>
                             </mask>
                         </defs>
                         <circle cx="7.4" cy="8" r="5.6" fill="currentColor" mask="url(#theme-moon-mask-en)"></circle>

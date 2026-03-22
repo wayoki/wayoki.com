@@ -1,7 +1,7 @@
 html, body {
     width: 100%;
     min-height: 100vh;
-    background: var(--color-bg-dark);
+    background: var(--landing-color-bg);
     overflow: hidden;
 }
 
@@ -9,7 +9,7 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    color: var(--color-text-light);
+    color: var(--landing-color-text-primary);
     transition: background-color 1800ms cubic-bezier(0.22, 1, 0.36, 1), color 1800ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
@@ -19,16 +19,7 @@ body::before {
     inset: 0;
     pointer-events: none;
     z-index: 2;
-    background:
-        repeating-linear-gradient(
-            to bottom,
-            rgba(255, 255, 255, 0.05) 0,
-            rgba(255, 255, 255, 0.05) 1px,
-            rgba(0, 0, 0, 0.05) 1px,
-            rgba(0, 0, 0, 0.05) 2px,
-            transparent 2px,
-            transparent 4px
-        );
+    background: var(--landing-screen-grid);
     opacity: 0.28;
     transition: opacity 1800ms ease, background 1800ms ease, transform 1800ms ease, filter 1800ms ease;
 }
@@ -39,13 +30,7 @@ body::after {
     inset: 0;
     pointer-events: none;
     z-index: 3;
-    background:
-        radial-gradient(
-            circle at center,
-            transparent 52%,
-            rgba(0, 0, 0, 0.22) 78%,
-            rgba(0, 0, 0, 0.5) 100%
-        );
+    background: var(--landing-screen-vignette);
     transition: opacity 1800ms ease, background 1800ms ease;
 }
 
@@ -57,9 +42,7 @@ body::after {
     justify-content: center;
     align-items: center;
     overflow: hidden;
-    background:
-        radial-gradient(circle at center, rgba(255, 255, 255, 0.025) 0%, rgba(0, 0, 0, 0) 48%),
-        var(--color-bg-dark);
+    background: var(--landing-intro-background);
     transition: background 1800ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
@@ -69,14 +52,7 @@ body::after {
     inset: -20% 0;
     pointer-events: none;
     z-index: 1;
-    background: linear-gradient(
-        to bottom,
-        transparent 0%,
-        rgba(255, 255, 255, 0.04) 46%,
-        rgba(255, 255, 255, 0.08) 50%,
-        rgba(255, 255, 255, 0.04) 54%,
-        transparent 100%
-    );
+    background: var(--landing-intro-sweep);
     opacity: 0.2;
     animation: crt-sweep 8.4s linear infinite;
     transition: opacity 1800ms ease;
@@ -88,7 +64,7 @@ body::after {
     inset: 0;
     pointer-events: none;
     z-index: 1;
-    background: rgba(255, 255, 255, 0.015);
+    background: var(--landing-intro-flicker);
     opacity: 0.45;
     animation: screen-flicker 6s linear infinite;
     transition: opacity 1800ms ease, background 1800ms ease;
@@ -109,16 +85,13 @@ body::after {
 .typing {
     position: relative;
     display: inline-block;
-    color: var(--color-text-light);
+    color: var(--landing-color-text-primary);
     font-size: 56px;
     font-family: var(--font-base);
     line-height: 1;
     letter-spacing: 0.05em;
     white-space: nowrap;
-    text-shadow:
-        0 0 7px rgba(255, 255, 255, 0.24),
-        0 0 18px rgba(255, 255, 255, 0.1),
-        0 0 30px rgba(255, 255, 255, 0.05);
+    text-shadow: var(--landing-hero-glow);
     will-change: transform, opacity;
     transition: color 1800ms ease, text-shadow 1800ms ease;
 }
@@ -138,9 +111,7 @@ body::after {
     opacity: 0;
     pointer-events: none;
     clip-path: inset(0 0 48% 0);
-    text-shadow:
-        0 0 7px rgba(255, 255, 255, 0.18),
-        0 0 20px rgba(255, 255, 255, 0.06);
+    text-shadow: var(--landing-hero-glitch-glow);
     transition: opacity 200ms ease;
 }
 
@@ -157,8 +128,8 @@ body::after {
     width: 12px;
     height: 1em;
     margin-left: 8px;
-    background: var(--color-text-light);
-    box-shadow: 0 0 8px rgba(255, 255, 255, 0.14);
+    background: var(--landing-color-text-primary);
+    box-shadow: var(--landing-cursor-glow);
     animation: blink 1.5s steps(1, end) infinite;
     transition: background-color 1800ms ease, box-shadow 1800ms ease;
 }
@@ -170,16 +141,14 @@ body::after {
     justify-content: center;
     min-width: 14ch;
     min-height: 46px;
-    color: rgba(255, 255, 255, 0.9);
+    color: var(--landing-color-text-secondary);
     font-size: 24px;
     font-family: var(--font-base);
     line-height: 1;
     letter-spacing: 0.08em;
     white-space: nowrap;
     text-align: center;
-    text-shadow:
-        0 0 4px rgba(255, 255, 255, 0.12),
-        0 0 10px rgba(255, 255, 255, 0.04);
+    text-shadow: var(--landing-loading-glow);
     will-change: transform, opacity;
     transition: color 1800ms ease, text-shadow 1800ms ease;
 }
@@ -220,9 +189,7 @@ body::after {
     opacity: 0;
     transform: translate(-50%, -50%) translateY(8px);
     pointer-events: none;
-    text-shadow:
-        0 0 2px rgba(0, 0, 0, 0.18),
-        0 0 12px rgba(255, 255, 255, 0.45);
+    text-shadow: var(--landing-start-glow);
     transition:
         opacity 420ms ease,
         transform 420ms ease,
@@ -236,7 +203,7 @@ body::after {
     position: absolute;
     width: 2px;
     height: 2px;
-    background: #050505;
+    background: var(--landing-color-pixel);
     opacity: 0;
     pointer-events: none;
     transform: scale(0.45);
@@ -246,29 +213,13 @@ body::after {
 .start-button::before {
     top: -5px;
     left: -5px;
-    box-shadow:
-        0 -4px 0 #050505,
-        0 4px 0 #050505,
-        -4px 0 0 #050505,
-        4px 0 0 #050505,
-        -2px -2px 0 #050505,
-        2px -2px 0 #050505,
-        -2px 2px 0 #050505,
-        2px 2px 0 #050505;
+    box-shadow: var(--landing-pixel-shadow);
 }
 
 .start-button::after {
     right: -5px;
     bottom: -5px;
-    box-shadow:
-        0 -4px 0 #050505,
-        0 4px 0 #050505,
-        -4px 0 0 #050505,
-        4px 0 0 #050505,
-        -2px -2px 0 #050505,
-        2px -2px 0 #050505,
-        -2px 2px 0 #050505,
-        2px 2px 0 #050505;
+    box-shadow: var(--landing-pixel-shadow);
 }
 
 .start-button-label {
@@ -276,9 +227,7 @@ body::after {
     display: inline-block;
     color: inherit;
     font-family: var(--font-base);
-    text-shadow:
-        0 0 1px rgba(0, 0, 0, 0.28),
-        0 0 10px rgba(255, 255, 255, 0.46);
+    text-shadow: var(--landing-start-label-glow);
 }
 
 .start-button-label::before,
@@ -292,26 +241,20 @@ body::after {
 
 .start-button-label::before {
     clip-path: inset(0 0 52% 0);
-    text-shadow:
-        -1px 0 0 rgba(211, 23, 23, 0.4),
-        -2px 0 0 rgba(5, 5, 5, 0.24);
+    text-shadow: var(--landing-start-glitch-top);
     animation: start-glitch-top 2.1s steps(2, end) infinite;
 }
 
 .start-button-label::after {
     clip-path: inset(54% 0 0 0);
-    text-shadow:
-        1px 0 0 rgba(5, 5, 5, 0.32),
-        2px 0 0 rgba(211, 23, 23, 0.22);
+    text-shadow: var(--landing-start-glitch-bottom);
     animation: start-glitch-bottom 2.45s steps(2, end) infinite;
 }
 
 body.start-hover-enabled .start-button:hover {
     outline: none;
     letter-spacing: 0.14em;
-    text-shadow:
-        0 0 2px rgba(0, 0, 0, 0.22),
-        0 0 18px rgba(255, 255, 255, 0.62);
+    text-shadow: var(--landing-start-hover-glow);
 }
 
 body.start-hover-enabled .start-button:hover::before,
@@ -336,9 +279,7 @@ body.start-hover-enabled .start-button:hover,
 .start-button.tap-hover-active {
     outline: none;
     letter-spacing: 0.14em;
-    text-shadow:
-        0 0 2px rgba(0, 0, 0, 0.22),
-        0 0 18px rgba(255, 255, 255, 0.62);
+    text-shadow: var(--landing-start-hover-glow);
 }
 
 .loading.ready .start-button {
@@ -394,9 +335,7 @@ body.start-hover-enabled .start-button:hover,
     color: inherit;
     cursor: pointer;
     text-transform: uppercase;
-    text-shadow:
-        0 0 1px rgba(0, 0, 0, 0.24),
-        0 0 10px rgba(255, 255, 255, 0.4);
+    text-shadow: var(--landing-language-glow);
     transition: opacity 180ms ease, letter-spacing 180ms ease, text-shadow 180ms ease;
 }
 
@@ -406,7 +345,7 @@ body.start-hover-enabled .start-button:hover,
     position: absolute;
     width: 2px;
     height: 2px;
-    background: #050505;
+    background: var(--landing-color-pixel);
     opacity: 0;
     pointer-events: none;
     transform: scale(0.45);
@@ -416,42 +355,24 @@ body.start-hover-enabled .start-button:hover,
 .language-option::before {
     top: -5px;
     right: -5px;
-    box-shadow:
-        0 -4px 0 #050505,
-        0 4px 0 #050505,
-        -4px 0 0 #050505,
-        4px 0 0 #050505,
-        -2px -2px 0 #050505,
-        2px -2px 0 #050505,
-        -2px 2px 0 #050505,
-        2px 2px 0 #050505;
+    box-shadow: var(--landing-pixel-shadow);
 }
 
 .language-option::after {
     left: -5px;
     bottom: -5px;
-    box-shadow:
-        0 -4px 0 #050505,
-        0 4px 0 #050505,
-        -4px 0 0 #050505,
-        4px 0 0 #050505,
-        -2px -2px 0 #050505,
-        2px -2px 0 #050505,
-        -2px 2px 0 #050505,
-        2px 2px 0 #050505;
+    box-shadow: var(--landing-pixel-shadow);
 }
 
 .language-divider {
-    color: rgba(5, 5, 5, 0.72);
+    color: var(--landing-color-divider);
 }
 
 .language-option:hover,
 .language-option:focus-visible {
     outline: none;
     letter-spacing: 0.14em;
-    text-shadow:
-        0 0 1px rgba(0, 0, 0, 0.3),
-        0 0 14px rgba(255, 255, 255, 0.52);
+    text-shadow: var(--landing-language-hover-glow);
 }
 
 .language-option:hover::before,
@@ -468,9 +389,7 @@ body.start-hover-enabled .start-button:hover,
 .language-option.tap-hover-active {
     outline: none;
     letter-spacing: 0.14em;
-    text-shadow:
-        0 0 1px rgba(0, 0, 0, 0.3),
-        0 0 14px rgba(255, 255, 255, 0.52);
+    text-shadow: var(--landing-language-hover-glow);
 }
 
 .content {
@@ -480,7 +399,7 @@ body.start-hover-enabled .start-button:hover,
     min-height: 100vh;
     opacity: 0;
     pointer-events: none;
-    background: var(--paper-gradient);
+    background: var(--landing-paper-gradient);
     transition: opacity 500ms ease;
 }
 
@@ -502,9 +421,7 @@ body.start-hover-enabled .start-button:hover,
     opacity: 0;
     pointer-events: none;
     transform: translateX(-50%) translateY(10px);
-    text-shadow:
-        0 0 8px rgba(211, 23, 23, 0.24),
-        0 0 18px rgba(211, 23, 23, 0.12);
+    text-shadow: var(--landing-media-link-glow);
     transition:
         opacity 700ms ease,
         transform 700ms ease,
@@ -552,15 +469,11 @@ body.site-active .media-link {
 
 body.photo-mode .media-link {
     color: var(--color-accent);
-    text-shadow:
-        0 0 5px rgba(211, 23, 23, 0.16),
-        0 0 12px rgba(255, 255, 255, 0.35);
+    text-shadow: var(--landing-media-link-photo-glow);
 }
 
 body:not(.photo-mode) .media-link {
-    text-shadow:
-        0 0 10px rgba(211, 23, 23, 0.3),
-        0 0 20px rgba(211, 23, 23, 0.2);
+    text-shadow: var(--landing-media-link-active-glow);
 }
 
 @media (max-width: 768px) {
@@ -590,31 +503,12 @@ body:not(.photo-mode) .media-link {
 }
 
 body.photo-mode {
-    background: var(--color-bg-paper);
-    color: var(--color-text-dark);
+    background: var(--landing-paper-bg);
+    color: var(--landing-paper-text);
 }
 
 body.photo-mode::before {
-    background:
-        radial-gradient(circle at 18% 24%, rgba(0, 0, 0, 0.24) 0 1px, transparent 1.5px),
-        radial-gradient(circle at 72% 68%, rgba(0, 0, 0, 0.2) 0 1px, transparent 1.6px),
-        radial-gradient(circle at 42% 78%, rgba(0, 0, 0, 0.16) 0 1px, transparent 1.3px),
-        radial-gradient(circle at 82% 16%, rgba(0, 0, 0, 0.18) 0 1px, transparent 1.4px),
-        repeating-linear-gradient(
-            90deg,
-            rgba(0, 0, 0, 0.08) 0 1px,
-            transparent 1px 5px,
-            rgba(0, 0, 0, 0.12) 5px 6px,
-            transparent 6px 13px
-        ),
-        repeating-linear-gradient(
-            0deg,
-            rgba(0, 0, 0, 0.05) 0 1px,
-            transparent 1px 6px,
-            rgba(0, 0, 0, 0.09) 6px 7px,
-            transparent 7px 14px
-        ),
-        linear-gradient(0deg, rgba(255, 255, 255, 0.54), rgba(255, 255, 255, 0.54));
+    background: var(--landing-photo-noise);
     background-size: 130px 130px, 165px 165px, 95px 95px, 145px 145px, 26px 26px, 32px 32px, 100% 100%;
     background-position: 0 0, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0;
     opacity: 0.98;
@@ -624,14 +518,12 @@ body.photo-mode::before {
 }
 
 body.photo-mode::after {
-    background:
-        radial-gradient(circle at center, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0) 58%),
-        radial-gradient(circle at center, rgba(0, 0, 0, 0.08) 78%, rgba(0, 0, 0, 0.18) 100%);
+    background: var(--landing-photo-vignette);
     opacity: 0.9;
 }
 
 body.photo-mode .intro {
-    background: var(--paper-gradient);
+    background: var(--landing-paper-gradient);
 }
 
 body.photo-mode .intro::before,
@@ -642,10 +534,8 @@ body.photo-mode .intro::after {
 
 body.photo-mode .typing,
 body.photo-mode .loading {
-    color: var(--color-text-dark);
-    text-shadow:
-        0 0 1px rgba(0, 0, 0, 0.2),
-        0 0 14px rgba(255, 255, 255, 0.52);
+    color: var(--landing-paper-text);
+    text-shadow: var(--landing-photo-text-glow);
 }
 
 body.photo-mode #site::before {
@@ -660,17 +550,17 @@ body.photo-mode #site.photo-glitch-split::before {
 }
 
 body.photo-mode .cursor {
-    background: var(--color-text-dark);
-    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.08);
+    background: var(--landing-paper-text);
+    box-shadow: var(--landing-photo-cursor-outline);
 }
 
 body.photo-mode .content {
-    background: var(--color-bg-paper);
+    background: var(--landing-paper-bg);
 }
 
 body.site-active {
-    background: var(--color-bg-paper);
-    color: var(--color-text-dark);
+    background: var(--landing-paper-bg);
+    color: var(--landing-paper-text);
 }
 
 body.site-active::before,
@@ -694,7 +584,7 @@ body.site-active .intro-content {
 body.site-active .content {
     opacity: 1;
     pointer-events: auto;
-    background: var(--paper-gradient);
+    background: var(--landing-paper-gradient);
 }
 
 @keyframes blink {
