@@ -1,0 +1,43 @@
+/*
+ * Semantic theme tokens only.
+ * Theme packs may override values here, but must not redefine layout, spacing,
+ * responsive rules, component composition or animation logic.
+ */
+:root {
+    --theme-color-scheme: light;
+
+    /* Safe shape tokens */
+    --radius-pill: 999px;
+    --radius-card: 26px;
+    --radius-card-large: 30px;
+    --radius-feature: 32px;
+    --radius-modal-mobile: 24px;
+
+    /* Brand lockup tokens */
+    --brand-lockup-width: auto;
+    --brand-credit-color: var(--color-text-muted);
+    --brand-credit-font-size: 10px;
+    --brand-credit-letter-spacing: 0.22em;
+    --brand-credit-row-gap: 4px;
+
+    /* Shared semantic tokens */
+    --color-mask-visible: #fff;
+    --color-mask-hidden: #000;
+    --color-success: #2f7d4d;
+    --color-warning: #a56b1f;
+    --color-danger: #b92a2a;
+
+    /* Derived gradients and effects built from semantic primitives */
+    --page-bg-gradient:
+        radial-gradient(circle at top, var(--color-bg-highlight) 0%, rgba(255, 255, 255, 0) 34%),
+        linear-gradient(180deg, var(--color-bg) 0%, var(--color-bg-secondary) 48%, var(--color-bg-tertiary) 100%);
+    --page-backdrop-gradient:
+        radial-gradient(circle at 50% -12%, var(--color-bg-glow) 0%, rgba(255, 255, 255, 0) 42%),
+        radial-gradient(circle at 82% 12%, var(--color-bg-accent) 0%, rgba(255, 255, 255, 0) 22%);
+    --feature-plaque-background:
+        linear-gradient(180deg, var(--color-card-strong), var(--color-card)),
+        var(--color-surface-elevated);
+    --feature-plaque-shadow:
+        var(--shadow-large),
+        inset 0 1px 0 var(--color-border-inset);
+}

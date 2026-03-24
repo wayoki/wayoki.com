@@ -8,17 +8,10 @@
         content="WAYOKI presents Kaidan, a restrained liminal horror project with compact studio news."
     >
     <title>WAYOKI</title>
-    <script>
-        (function () {
-            try {
-                var savedTheme = localStorage.getItem("wayoki-localized-theme");
-                document.documentElement.dataset.theme = savedTheme === "dark" ? "dark" : "light";
-            } catch (error) {
-                document.documentElement.dataset.theme = "light";
-            }
-        })();
-    </script>
     <link rel="icon" type="image/png" href="/assets/img/logo.png">
+    <script src="/collab/site-ui/theme-registry.js"></script>
+    <script src="/assets/js/theme-switcher.js"></script>
+    <script src="/assets/js/news-prefetch.js"></script>
     <link rel="stylesheet" href="/assets/css/theme.css">
     <link rel="stylesheet" href="/assets/css/base.css">
     <link rel="stylesheet" href="/assets/css/localized.css">
@@ -26,7 +19,10 @@
 </head>
 <body class="localized-page">
     <header class="site-header">
-        <a class="brand" href="/en/" aria-label="WAYOKI English homepage">WAYOKI</a>
+        <div class="brand-stack">
+            <a class="brand" href="/en/" aria-label="WAYOKI English homepage">WAYOKI</a>
+            <p class="brand-credit" data-theme-credit aria-live="polite" hidden>by author</p>
+        </div>
         <a class="header-news" href="#news" aria-label="Jump to the news section">
             <span class="header-news-label">News</span>
             <span class="header-news-text" data-news-teaser>Latest notes and announcements from the project.</span>
@@ -36,36 +32,68 @@
                 <a class="locale-link" href="/ru/">RU</a>
                 <a class="locale-link" href="/en/" aria-current="page">EN</a>
             </nav>
-            <div class="theme-switch" role="group" aria-label="Theme">
+            <div class="theme-stack">
                 <button
-                    class="theme-button"
+                    class="theme-button theme-menu-toggle"
                     type="button"
-                    data-theme-option="light"
-                    aria-label="Light theme"
-                    aria-pressed="true"
+                    data-theme-menu-toggle
+                    aria-label="Show themes"
+                    aria-controls="theme-menu-en-home"
+                    aria-expanded="false"
                 >
-                    <svg class="theme-icon theme-icon-sun" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
-                        <circle cx="8" cy="8" r="2.75"></circle>
-                        <path d="M8 1.5V3.5M8 12.5V14.5M1.5 8H3.5M12.5 8H14.5M3.1 3.1L4.5 4.5M11.5 11.5L12.9 12.9M12.9 3.1L11.5 4.5M4.5 11.5L3.1 12.9"></path>
-                    </svg>
+                    <span class="theme-menu-toggle-text">Themes</span>
                 </button>
-                <button
-                    class="theme-button"
-                    type="button"
-                    data-theme-option="dark"
-                    aria-label="Dark theme"
-                    aria-pressed="false"
-                >
-                    <svg class="theme-icon theme-icon-moon" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
-                        <defs>
-                            <mask id="theme-moon-mask-en">
-                                <rect width="16" height="16" fill="var(--color-mask-visible)"></rect>
-                                <circle cx="10.8" cy="5.9" r="4.8" fill="var(--color-mask-hidden)"></circle>
-                            </mask>
-                        </defs>
-                        <circle cx="7.4" cy="8" r="5.6" fill="currentColor" mask="url(#theme-moon-mask-en)"></circle>
-                    </svg>
-                </button>
+                <div class="theme-menu" id="theme-menu-en-home" data-theme-menu hidden role="group" aria-label="Theme">
+                    <button
+                        class="theme-button theme-button-option"
+                        type="button"
+                        data-theme-option="light"
+                        aria-label="Light theme"
+                        aria-pressed="true"
+                    >
+                        <svg class="theme-icon theme-icon-sun" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+                            <circle cx="8" cy="8" r="2.75"></circle>
+                            <path d="M8 1.5V3.5M8 12.5V14.5M1.5 8H3.5M12.5 8H14.5M3.1 3.1L4.5 4.5M11.5 11.5L12.9 12.9M12.9 3.1L11.5 4.5M4.5 11.5L3.1 12.9"></path>
+                        </svg>
+                        <span class="theme-button-label">light</span>
+                    </button>
+                    <button
+                        class="theme-button theme-button-option"
+                        type="button"
+                        data-theme-option="dark"
+                        aria-label="Dark theme"
+                        aria-pressed="false"
+                    >
+                        <svg class="theme-icon theme-icon-moon" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+                            <defs>
+                                <mask id="theme-menu-moon-mask-en-home">
+                                    <rect width="16" height="16" fill="var(--color-mask-visible)"></rect>
+                                    <circle cx="10.8" cy="5.9" r="4.8" fill="var(--color-mask-hidden)"></circle>
+                                </mask>
+                            </defs>
+                            <circle cx="7.4" cy="8" r="5.6" fill="currentColor" mask="url(#theme-menu-moon-mask-en-home)"></circle>
+                        </svg>
+                        <span class="theme-button-label">dark</span>
+                    </button>
+                    <button
+                        class="theme-button theme-button-option"
+                        type="button"
+                        data-theme-option="author-1"
+                        aria-label="Author theme 1"
+                        aria-pressed="false"
+                    >
+                        <span class="theme-button-label">A1</span>
+                    </button>
+                    <button
+                        class="theme-button theme-button-option"
+                        type="button"
+                        data-theme-option="author-2"
+                        aria-label="Author theme 2"
+                        aria-pressed="false"
+                    >
+                        <span class="theme-button-label">A2</span>
+                    </button>
+                </div>
             </div>
         </div>
     </header>

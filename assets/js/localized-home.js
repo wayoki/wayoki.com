@@ -1,15 +1,43 @@
 const themeStorageKey = "wayoki-localized-theme";
+const themeRuntime = window.WayokiThemeSwitcher || null;
 const newsFeedUrl = "https://script.google.com/macros/s/AKfycbwk3ctmn8qMPDTxkLBoz1K3uSZbN4ICpu70hooE4kGI0TCJtvZt2Rcz4IxNNfhnbn7p/exec";
+const newsCacheStorageKey = "wayoki_news_cache";
+const newsFallbackUrl = "https://t.me/wayoki";
 const newsPreviewLimits = {
     feature: 180,
     card: 120
 };
+let newsPrefetchPromise = null;
+let newsPrefetchLocale = "";
+const newsPrefetchRuntime = window.WayokiNewsPrefetch || null;
+
+function markFlowEvent(name, details) {
+    if (window.performance && typeof window.performance.mark === "function") {
+        try {
+            window.performance.mark(name);
+        } catch (error) {
+            // Keep logging even if the mark API rejects the mark.
+        }
+    }
+
+    if (window.console && typeof window.console.log === "function") {
+        console.log(`[wayoki-flow] ${name}`, details || {});
+    }
+}
 
 function normalizeTheme(theme) {
-    return theme === "dark" ? "dark" : "light";
+    if (themeRuntime && typeof themeRuntime.normalizeTheme === "function") {
+        return themeRuntime.normalizeTheme(theme);
+    }
+
+    return theme === "dark" || theme === "author-1" || theme === "author-2" ? theme : "light";
 }
 
 function readStoredTheme() {
+    if (themeRuntime && typeof themeRuntime.readStoredTheme === "function") {
+        return themeRuntime.readStoredTheme();
+    }
+
     try {
         return normalizeTheme(localStorage.getItem(themeStorageKey));
     } catch (error) {
@@ -20,7 +48,27 @@ function readStoredTheme() {
 function applyTheme(theme) {
     const nextTheme = normalizeTheme(theme);
 
+    if (themeRuntime && typeof themeRuntime.applyTheme === "function") {
+        return themeRuntime.applyTheme(nextTheme);
+    }
+
     document.documentElement.dataset.theme = nextTheme;
+    return nextTheme;
+}
+
+function selectTheme(theme) {
+    if (themeRuntime && typeof themeRuntime.selectTheme === "function") {
+        return themeRuntime.selectTheme(theme);
+    }
+
+    const nextTheme = applyTheme(theme);
+
+    try {
+        localStorage.setItem(themeStorageKey, nextTheme);
+    } catch (error) {
+        return nextTheme;
+    }
+
     return nextTheme;
 }
 
@@ -109,6 +157,100 @@ function normalizeNewsItems(items, locale) {
             link: textValue(item.link || item.url)
         }))
         .filter((item) => item.title);
+}
+
+function normalizeCachedNewsItems(items, locale) {
+    if (!Array.isArray(items)) {
+        return null;
+    }
+
+    const normalizedItems = items
+        .map((item, index) => ({
+            id: textValue(item && item.id) || `news-${index}`,
+            date: textValue(item && item.date),
+            displayDate: textValue(item && item.displayDate) || formatNewsDate(item && item.date, locale),
+            title: textValue(item && item.title),
+            text: textValue(item && item.text),
+            link: textValue(item && item.link)
+        }))
+        .filter((item) => item.title);
+
+    if (items.length && !normalizedItems.length) {
+        return null;
+    }
+
+    return normalizedItems;
+}
+
+function readNewsCacheMap() {
+    try {
+        const rawCache = sessionStorage.getItem(newsCacheStorageKey);
+
+        if (!rawCache) {
+            return {};
+        }
+
+        const parsedCache = JSON.parse(rawCache);
+
+        if (!parsedCache || typeof parsedCache !== "object" || Array.isArray(parsedCache)) {
+            return {};
+        }
+
+        return parsedCache;
+    } catch (error) {
+        return {};
+    }
+}
+
+function readCachedNews(locale) {
+    const cacheEntry = readNewsCacheMap()[locale];
+
+    if (!cacheEntry || typeof cacheEntry !== "object") {
+        return null;
+    }
+
+    return normalizeCachedNewsItems(cacheEntry.items, locale);
+}
+
+function writeCachedNews(locale, items) {
+    const normalizedItems = normalizeCachedNewsItems(items, locale);
+
+    if (!normalizedItems) {
+        return;
+    }
+
+    try {
+        const cacheMap = readNewsCacheMap();
+
+        cacheMap[locale] = {
+            updatedAt: Date.now(),
+            items: normalizedItems
+        };
+
+        sessionStorage.setItem(newsCacheStorageKey, JSON.stringify(cacheMap));
+    } catch (error) {
+        return;
+    }
+}
+
+function getNavigationType() {
+    if (window.performance && typeof window.performance.getEntriesByType === "function") {
+        const [navigationEntry] = window.performance.getEntriesByType("navigation");
+
+        if (navigationEntry && typeof navigationEntry.type === "string") {
+            return navigationEntry.type;
+        }
+    }
+
+    if (window.performance && window.performance.navigation) {
+        return window.performance.navigation.type === 1 ? "reload" : "navigate";
+    }
+
+    return "navigate";
+}
+
+function shouldRefreshNewsOnLoad() {
+    return getNavigationType() === "reload";
 }
 
 function createNewsHeading(tagName, className, item) {
@@ -375,13 +517,17 @@ function renderHomeNews(items, elements, labels) {
 function renderArchiveNews(items, elements, labels) {
     const archiveItems = items.slice(3);
 
-    if (archiveItems.length && elements.newsEmpty) {
-        elements.newsEmpty.hidden = true;
+    if (elements.newsEmpty) {
+        elements.newsEmpty.hidden = archiveItems.length > 0;
     }
 
     if (!archiveItems.length) {
         if (elements.newsTeaser) {
             elements.newsTeaser.textContent = labels.archiveTeaser;
+        }
+
+        if (elements.newsEmpty) {
+            elements.newsEmpty.textContent = labels.archiveEmpty;
         }
 
         elements.newsList.replaceChildren();
@@ -393,6 +539,105 @@ function renderArchiveNews(items, elements, labels) {
     }
 
     elements.newsList.replaceChildren(...archiveItems.map((item) => buildNewsCard(item, labels)));
+}
+
+function syncNewsStore(items, newsStore) {
+    newsStore.clear();
+    items.forEach((item) => {
+        newsStore.set(item.id, item);
+    });
+}
+
+function setNewsBusy(elements, busy) {
+    if (!elements.newsSection) {
+        return;
+    }
+
+    if (busy) {
+        elements.newsSection.setAttribute("aria-busy", "true");
+        return;
+    }
+
+    elements.newsSection.removeAttribute("aria-busy");
+}
+
+function renderHomeNewsStatus(elements, labels, status) {
+    const featureItem = {
+        id: status.featureId || "news-status-feature",
+        date: "",
+        displayDate: "",
+        title: status.featureTitle,
+        text: status.featurePreview,
+        link: textValue(status.featureLink)
+    };
+    const cardItem = {
+        id: status.cardId || "news-status-card",
+        date: "",
+        displayDate: "",
+        title: status.cardTitle,
+        text: status.cardPreview,
+        link: textValue(status.cardLink)
+    };
+
+    if (elements.newsTeaser && status.teaser) {
+        elements.newsTeaser.textContent = status.teaser;
+    }
+
+    if (elements.newsFeature) {
+        elements.newsFeature.replaceChildren(buildFeatureNews(featureItem, labels));
+    }
+
+    if (!elements.newsList) {
+        return;
+    }
+
+    if (!status.cardTitle) {
+        elements.newsList.replaceChildren();
+        return;
+    }
+
+    elements.newsList.replaceChildren(buildNewsCard(cardItem, labels));
+}
+
+function renderArchiveNewsStatus(elements, teaser, message) {
+    if (elements.newsTeaser && teaser) {
+        elements.newsTeaser.textContent = teaser;
+    }
+
+    if (elements.newsEmpty) {
+        elements.newsEmpty.hidden = false;
+        elements.newsEmpty.textContent = message;
+    }
+
+    if (elements.newsList) {
+        elements.newsList.replaceChildren();
+    }
+}
+
+function renderNewsSection(items, context) {
+    const normalizedItems = Array.isArray(items) ? items : [];
+
+    syncNewsStore(normalizedItems, context.newsStore);
+
+    if (context.archiveView) {
+        renderArchiveNews(normalizedItems, context.elements, context.labels);
+        return;
+    }
+
+    if (!normalizedItems.length) {
+        renderHomeNewsStatus(context.elements, context.labels, {
+            teaser: context.labels.emptyTeaser,
+            featureTitle: context.labels.emptyFeatureTitle,
+            featurePreview: context.labels.emptyFeaturePreview,
+            cardTitle: context.labels.emptyCardTitle,
+            cardPreview: context.labels.emptyCardPreview,
+            featureLink: newsFallbackUrl,
+            cardLink: newsFallbackUrl
+        });
+        return;
+    }
+
+    renderHomeNews(normalizedItems, context.elements, context.labels);
 }
 
 function fetchNews(locale) {
@@ -417,14 +662,43 @@ function fetchNews(locale) {
         });
 }
 
+function prefetchNews(locale, options = {}) {
+    const forceRefresh = Boolean(options.forceRefresh);
+
+    if (newsPrefetchPromise && newsPrefetchLocale === locale) {
+        return newsPrefetchPromise;
+    }
+
+    if (!forceRefresh) {
+        const cachedItems = readCachedNews(locale);
+
+        if (cachedItems !== null) {
+            newsPrefetchLocale = locale;
+            newsPrefetchPromise = Promise.resolve(cachedItems);
+            return newsPrefetchPromise;
+        }
+    }
+
+    newsPrefetchLocale = locale;
+    newsPrefetchPromise = fetchNews(locale).then((items) => {
+        writeCachedNews(locale, items);
+        return items;
+    });
+
+    return newsPrefetchPromise;
+}
+
 applyTheme(readStoredTheme());
 
 document.addEventListener("DOMContentLoaded", () => {
     const themeButtons = document.querySelectorAll("[data-theme-option]");
+    const themeMenuToggle = document.querySelector("[data-theme-menu-toggle]");
+    const themeMenu = document.querySelector("[data-theme-menu]");
     const locale = detectLocale();
     const archiveView = isArchivePage();
     const newsStore = new Map();
     const elements = {
+        newsSection: document.getElementById("news"),
         newsFeature: document.querySelector("[data-news-feature]"),
         newsList: document.querySelector("[data-news-list]"),
         newsTeaser: document.querySelector("[data-news-teaser]"),
@@ -434,8 +708,52 @@ document.addEventListener("DOMContentLoaded", () => {
         read: locale === "ru" ? "Открыть заметку" : "Read note",
         expand: locale === "ru" ? "Открыть полностью" : "Open full",
         close: locale === "ru" ? "Закрыть" : "Close",
-        archiveTeaser: locale === "ru" ? "Предыдущие заметки и архивные обновления." : "Previous notes and archived updates."
+        archiveTeaser: locale === "ru" ? "Предыдущие заметки и архивные обновления." : "Previous notes and archived updates.",
+        archiveEmpty: locale === "ru"
+            ? "Архивные записи появятся здесь, когда накопится больше новостей."
+            : "Older notes will appear here as the archive grows.",
+        loadingTeaser: locale === "ru" ? "Загружаем последние заметки в фоне..." : "Loading the latest notes in the background...",
+        loadingFeatureTitle: locale === "ru" ? "Подтягиваем свежие новости проекта." : "Pulling the latest project updates.",
+        loadingFeaturePreview: locale === "ru"
+            ? "Секция новостей уже активна и заполнится сразу, как только завершится текущий фоновый запрос."
+            : "The news section is already active and will fill in as soon as the current background request finishes.",
+        loadingArchive: locale === "ru"
+            ? "Архив загружается в фоне и заполнится сразу, как только завершится текущий запрос."
+            : "The archive is loading in the background and will fill in as soon as the current request finishes.",
+        loadingCardTitle: locale === "ru" ? "Готовим дополнительные записи." : "Preparing additional entries.",
+        loadingCardPreview: locale === "ru"
+            ? "Если лента отвечает медленно, этот блок останется аккуратным placeholder до прихода данных."
+            : "If the feed responds slowly, this block stays as a tidy placeholder until the data arrives.",
+        errorTeaser: locale === "ru" ? "Лента новостей сейчас недоступна." : "The news feed is currently unavailable.",
+        errorFeatureTitle: locale === "ru" ? "Не удалось загрузить новости прямо сейчас." : "Couldn't load the news feed right now.",
+        errorFeaturePreview: locale === "ru"
+            ? "Страница продолжает работать нормально. Попробуйте позже или откройте заметки напрямую в Telegram."
+            : "The page is still working normally. Please try again later or open the notes directly on Telegram.",
+        errorCardTitle: locale === "ru" ? "Фоновая загрузка не ответила вовремя." : "The background request didn't respond in time.",
+        errorCardPreview: locale === "ru"
+            ? "Если в этой вкладке уже были сохранённые данные, они используются автоматически. Иначе показываем безопасный fallback."
+            : "If this tab already had saved data, it is used automatically. Otherwise a safe fallback is shown.",
+        errorArchive: locale === "ru"
+            ? "Архив временно недоступен. Если в этой вкладке уже были сохранённые новости, они используются автоматически."
+            : "The archive is temporarily unavailable. If this tab already had saved news, it is used automatically.",
+        emptyTeaser: locale === "ru" ? "Опубликованные новости появятся здесь." : "Published news will appear here.",
+        emptyFeatureTitle: locale === "ru" ? "Пока нет опубликованных новостей." : "There are no published news items yet.",
+        emptyFeaturePreview: locale === "ru"
+            ? "Как только появится первая публичная заметка, главная страница сразу начнёт показывать её здесь."
+            : "As soon as the first public note appears, the homepage will start showing it here.",
+        emptyCardTitle: locale === "ru" ? "Архив начнёт заполняться позже." : "The archive will start filling in later.",
+        emptyCardPreview: locale === "ru"
+            ? "До появления новых записей можно следить за обновлениями через основные каналы проекта."
+            : "Until new entries arrive, you can follow updates through the project's main channels."
     };
+    const readNewsFromCache = newsPrefetchRuntime ? newsPrefetchRuntime.readCachedNews : readCachedNews;
+    const shouldRefreshNews = newsPrefetchRuntime ? newsPrefetchRuntime.shouldRefreshNewsOnLoad : shouldRefreshNewsOnLoad;
+    const startNewsPrefetch = newsPrefetchRuntime ? newsPrefetchRuntime.prefetchNews : prefetchNews;
+
+    markFlowEvent("wayoki_main_screen_shown", {
+        locale,
+        path: window.location.pathname
+    });
 
     function syncThemeButtons(theme) {
         themeButtons.forEach((button) => {
@@ -445,25 +763,56 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    function persistTheme(theme) {
-        try {
-            localStorage.setItem(themeStorageKey, theme);
-        } catch (error) {
+    function setThemeMenuOpen(nextOpen) {
+        if (!themeMenuToggle || !themeMenu) {
             return;
         }
+
+        themeMenu.hidden = !nextOpen;
+        themeMenuToggle.setAttribute("aria-expanded", String(nextOpen));
     }
 
     const initialTheme = applyTheme(readStoredTheme());
 
     syncThemeButtons(initialTheme);
 
-    themeButtons.forEach((button) => {
-        button.addEventListener("click", () => {
-            const nextTheme = applyTheme(button.dataset.themeOption);
+    if (themeMenuToggle && themeMenu) {
+        setThemeMenuOpen(false);
 
-            persistTheme(nextTheme);
-            syncThemeButtons(nextTheme);
+        themeMenuToggle.addEventListener("click", () => {
+            setThemeMenuOpen(themeMenu.hidden);
         });
+
+        document.addEventListener("click", (event) => {
+            if (themeMenu.hidden) {
+                return;
+            }
+
+            if (themeMenuToggle.contains(event.target) || themeMenu.contains(event.target)) {
+                return;
+            }
+
+            setThemeMenuOpen(false);
+        });
+    }
+
+    document.addEventListener("click", (event) => {
+        const button = event.target.closest("[data-theme-option]");
+
+        if (!button) {
+            return;
+        }
+
+        const nextTheme = selectTheme(button.dataset.themeOption);
+
+        syncThemeButtons(nextTheme);
+    });
+
+    document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape" && themeMenuToggle && themeMenu && !themeMenu.hidden) {
+            setThemeMenuOpen(false);
+            themeMenuToggle.focus();
+        }
     });
 
     if (!elements.newsList) {
@@ -492,21 +841,62 @@ document.addEventListener("DOMContentLoaded", () => {
         newsModal.open(item);
     });
 
-    fetchNews(locale)
-        .then((items) => {
-            newsStore.clear();
-            items.forEach((item) => {
-                newsStore.set(item.id, item);
-            });
+    const cachedItems = readNewsFromCache(locale);
+    const hasCachedNews = cachedItems !== null;
+    const shouldRefresh = shouldRefreshNews() || !hasCachedNews;
+    const newsPromise = startNewsPrefetch(locale, {
+        forceRefresh: shouldRefresh,
+        reason: "localized-home-init"
+    });
+    const renderContext = {
+        archiveView,
+        elements,
+        labels,
+        newsStore
+    };
 
-            if (archiveView) {
-                renderArchiveNews(items, elements, labels);
+    if (hasCachedNews) {
+        renderNewsSection(cachedItems, renderContext);
+    } else if (archiveView) {
+        renderArchiveNewsStatus(elements, labels.loadingTeaser, labels.loadingArchive);
+    } else {
+        renderHomeNewsStatus(elements, labels, {
+            teaser: labels.loadingTeaser,
+            featureTitle: labels.loadingFeatureTitle,
+            featurePreview: labels.loadingFeaturePreview,
+            cardTitle: labels.loadingCardTitle,
+            cardPreview: labels.loadingCardPreview
+        });
+    }
+
+    setNewsBusy(elements, !hasCachedNews || shouldRefresh);
+
+    newsPromise
+        .then((items) => {
+            renderNewsSection(items, renderContext);
+            setNewsBusy(elements, false);
+        })
+        .catch((error) => {
+            setNewsBusy(elements, false);
+            console.error("Failed to load news feed", error);
+
+            if (hasCachedNews) {
                 return;
             }
 
-            renderHomeNews(items, elements, labels);
-        })
-        .catch((error) => {
-            console.error("Failed to load news feed", error);
+            if (archiveView) {
+                renderArchiveNewsStatus(elements, labels.errorTeaser, labels.errorArchive);
+                return;
+            }
+
+            renderHomeNewsStatus(elements, labels, {
+                teaser: labels.errorTeaser,
+                featureTitle: labels.errorFeatureTitle,
+                featurePreview: labels.errorFeaturePreview,
+                featureLink: newsFallbackUrl,
+                cardTitle: labels.errorCardTitle,
+                cardPreview: labels.errorCardPreview,
+                cardLink: newsFallbackUrl
+            });
         });
 });

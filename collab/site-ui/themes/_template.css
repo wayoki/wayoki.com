@@ -1,0 +1,69 @@
+/*
+ * Copy this file to create a new theme pack.
+ * Rename the selector to html[data-theme="your-theme-id"].
+ * Override tokens only. Do not place layout, spacing, breakpoints, animations
+ * or component structure rules in a theme pack.
+ */
+html[data-theme="your-theme-id"] {
+    --theme-color-scheme: light;
+
+    --color-accent: #000000;
+    --color-accent-hover: #000000;
+
+    --color-bg: #ffffff;
+    --color-bg-secondary: #f4f4f4;
+    --color-bg-tertiary: #ececec;
+    --color-bg-highlight: rgba(255, 255, 255, 0.8);
+    --color-bg-glow: rgba(255, 255, 255, 0.2);
+    --color-bg-accent: rgba(255, 255, 255, 0.1);
+
+    --color-surface: rgba(255, 255, 255, 0.6);
+    --color-surface-strong: rgba(255, 255, 255, 0.7);
+    --color-surface-elevated: rgba(255, 255, 255, 0.85);
+    --color-card: var(--color-surface);
+    --color-card-strong: var(--color-surface-strong);
+    --color-chip: rgba(255, 255, 255, 0.6);
+    --color-chip-hover: rgba(255, 255, 255, 0.78);
+    --color-toggle-active: rgba(0, 0, 0, 0.1);
+
+    --color-text-primary: #000000;
+    --color-text-secondary: rgba(0, 0, 0, 0.72);
+    --color-text-muted: rgba(0, 0, 0, 0.56);
+
+    --color-border: rgba(0, 0, 0, 0.12);
+    --color-border-strong: rgba(0, 0, 0, 0.18);
+    --color-border-inset: rgba(255, 255, 255, 0.74);
+
+    --color-link: rgba(0, 0, 0, 0.68);
+    --color-link-hover: #000000;
+
+    --color-overlay: rgba(0, 0, 0, 0.42);
+    --shadow-soft: 0 18px 36px rgba(0, 0, 0, 0.05);
+    --shadow-medium: 0 14px 30px rgba(0, 0, 0, 0.04);
+    --shadow-large: 0 30px 60px rgba(0, 0, 0, 0.06);
+
+    --brand-credit-color: var(--color-text-muted);
+    --brand-credit-font-size: 10px;
+    --brand-credit-letter-spacing: 0.18em;
+
+    --landing-color-bg: #000000;
+    --landing-color-text-primary: #ffffff;
+    --landing-color-text-secondary: rgba(255, 255, 255, 0.9);
+    --landing-color-pixel: #050505;
+    --landing-color-divider: rgba(255, 255, 255, 0.72);
+
+    --landing-paper-bg: #f6f4ef;
+    --landing-paper-text: #050505;
+    --landing-paper-gradient:
+        radial-gradient(
+            circle at 50% 38%,
+            rgba(255, 255, 255, 0.98) 0%,
+            rgba(242, 240, 234, 0.94) 58%,
+            rgba(229, 226, 218, 0.88) 100%
+        );
+
+    /* Optional pack-specific overrides */
+    /* --page-backdrop-gradient: none; */
+    /* --feature-plaque-background: #14171c; */
+    /* --feature-plaque-shadow: var(--shadow-large); */
+}

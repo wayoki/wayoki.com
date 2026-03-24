@@ -1,4 +1,18 @@
 document.addEventListener("DOMContentLoaded", () => {
+  function markFlowEvent(name, details) {
+    if (window.performance && typeof window.performance.mark === "function") {
+      try {
+        window.performance.mark(name);
+      } catch (error) {
+        // Keep logging even if the mark API rejects a duplicate or malformed name.
+      }
+    }
+
+    if (window.console && typeof window.console.log === "function") {
+      console.log(`[wayoki-flow] ${name}`, details || {});
+    }
+  }
+
   const intro = document.querySelector(".intro");
   const introContent = document.querySelector(".intro-content");
   const typing = document.querySelector(".typing");
@@ -269,6 +283,9 @@ document.addEventListener("DOMContentLoaded", () => {
     document.body.classList.add("intro-ready");
     document.body.classList.remove("start-hover-enabled");
     window.addEventListener("pointermove", armStartHover, { once: true });
+    markFlowEvent("wayoki_intro_finished", {
+      path: window.location.pathname
+    });
   }
 
   function showLanguagePicker() {
@@ -286,6 +303,9 @@ document.addEventListener("DOMContentLoaded", () => {
     startButton.hidden = true;
     languagePicker.hidden = false;
     loading.classList.add("language-mode");
+    markFlowEvent("wayoki_language_picker_shown", {
+      path: window.location.pathname
+    });
   }
 
   function navigateToLanguage(languageCode) {

@@ -1,6 +1,6 @@
 html {
     scroll-behavior: smooth;
-    color-scheme: light;
+    color-scheme: var(--theme-color-scheme, light);
     --footer-group-gap: 12px;
     --footer-heading-gap: 8px;
     --footer-row-gap: 10px;
@@ -9,10 +9,6 @@ html {
     --footer-column-gap: 24px;
     --footer-padding-top: 14px;
     --footer-padding-bottom: 18px;
-}
-
-html[data-theme="dark"] {
-    color-scheme: dark;
 }
 
 body.localized-page {
@@ -59,7 +55,15 @@ body.localized-page a {
     min-height: 96px;
     padding: 24px 0 20px;
     border-bottom: 1px solid var(--color-border);
+    z-index: 4;
     transition: border-color 220ms ease;
+}
+
+.brand-stack {
+    position: relative;
+    display: inline-grid;
+    align-items: center;
+    justify-items: start;
 }
 
 .brand {
@@ -70,6 +74,25 @@ body.localized-page a {
     text-transform: uppercase;
 }
 
+.brand-credit {
+    position: absolute;
+    top: calc(100% + var(--brand-credit-row-gap));
+    left: 0;
+    margin: 0;
+    min-height: 1em;
+    font-size: var(--brand-credit-font-size);
+    line-height: 1;
+    letter-spacing: var(--brand-credit-letter-spacing);
+    text-transform: uppercase;
+    color: var(--brand-credit-color);
+    white-space: nowrap;
+}
+
+.brand-credit[hidden] {
+    display: block !important;
+    visibility: hidden;
+}
+
 .header-news {
     min-width: 0;
     display: inline-flex;
@@ -77,7 +100,7 @@ body.localized-page a {
     gap: 12px;
     padding: 10px 16px;
     border: 1px solid var(--color-border);
-    border-radius: 999px;
+    border-radius: var(--radius-pill);
     background: var(--color-chip);
     box-shadow: var(--shadow-medium);
     transition: border-color 180ms ease, background-color 180ms ease, color 180ms ease;
@@ -126,7 +149,7 @@ body.localized-page a {
     min-height: 32px;
     min-width: 38px;
     padding: 8px 10px;
-    border-radius: 999px;
+    border-radius: var(--radius-pill);
     font-size: 12px;
     letter-spacing: 0.14em;
     text-transform: uppercase;
@@ -145,15 +168,17 @@ body.localized-page a {
     color: var(--color-text-primary);
 }
 
-.theme-switch {
-    display: inline-flex;
-    align-items: center;
+.theme-stack {
+    position: relative;
+    display: grid;
+    justify-items: end;
     gap: 8px;
+    z-index: 6;
 }
 
 .theme-button {
     border: 0;
-    border-radius: 999px;
+    border-radius: var(--radius-pill);
     background: transparent;
     color: var(--color-text-muted);
     cursor: pointer;
@@ -161,9 +186,28 @@ body.localized-page a {
     align-items: center;
     justify-content: center;
     width: 38px;
+    min-width: 38px;
     min-height: 32px;
     padding: 0;
     transition: background-color 180ms ease, color 180ms ease;
+}
+
+.theme-button-label {
+    display: block;
+    line-height: 1;
+}
+
+.theme-menu-toggle {
+    width: auto;
+    min-width: 0;
+    padding: 0 14px;
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+}
+
+.theme-menu-toggle-text {
+    line-height: 1;
 }
 
 .theme-button:hover,
@@ -176,6 +220,46 @@ body.localized-page a {
 .theme-button[aria-pressed="true"] {
     background: var(--color-toggle-active);
     color: var(--color-text-primary);
+}
+
+.theme-menu-toggle[aria-expanded="true"],
+.theme-menu-toggle:focus-visible {
+    background: var(--color-toggle-active);
+    color: var(--color-text-primary);
+}
+
+.theme-menu {
+    position: absolute;
+    top: calc(100% + 10px);
+    right: 0;
+    min-width: 172px;
+    display: grid;
+    gap: 6px;
+    padding: 10px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-card);
+    background: var(--color-card-strong);
+    box-shadow: var(--shadow-medium);
+    z-index: 20;
+}
+
+.theme-menu[hidden] {
+    display: none !important;
+}
+
+.theme-button-option {
+    width: 100%;
+    min-width: 0;
+    padding: 0 12px;
+    justify-content: flex-start;
+    gap: 10px;
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+}
+
+.theme-button-option .theme-icon {
+    flex: none;
 }
 
 .theme-icon {
@@ -220,7 +304,7 @@ body.localized-page a {
     gap: 16px;
     padding: clamp(30px, 5vw, 56px);
     border: 1px solid var(--color-border);
-    border-radius: 32px;
+    border-radius: var(--radius-feature);
     background: var(--feature-plaque-background);
     box-shadow: var(--feature-plaque-shadow);
     transition: border-color 220ms ease, background 220ms ease, box-shadow 220ms ease;
@@ -302,7 +386,7 @@ body.localized-page a {
     gap: 14px;
     padding: 28px 24px;
     border: 1px solid var(--color-border);
-    border-radius: 30px;
+    border-radius: var(--radius-card-large);
     background: var(--color-card-strong);
     box-shadow: var(--shadow-medium);
     transition: border-color 220ms ease, background-color 220ms ease, box-shadow 220ms ease;
@@ -366,7 +450,7 @@ body.localized-page a {
     min-height: 0;
     padding: 24px 22px;
     border: 1px solid var(--color-border);
-    border-radius: 26px;
+    border-radius: var(--radius-card);
     background: var(--color-card);
     box-shadow: var(--shadow-soft);
     transition: border-color 220ms ease, background-color 220ms ease, box-shadow 220ms ease;
@@ -467,7 +551,7 @@ body.localized-page a {
     gap: 18px;
     padding: 28px 24px 24px;
     border: 1px solid var(--color-border);
-    border-radius: 30px;
+    border-radius: var(--radius-card-large);
     background: var(--color-card-strong);
     box-shadow: var(--shadow-large);
     overflow: hidden;
@@ -481,7 +565,7 @@ body.localized-page a {
     width: 34px;
     min-height: 34px;
     border: 1px solid var(--color-border);
-    border-radius: 999px;
+    border-radius: var(--radius-pill);
     background: var(--color-card);
     color: var(--color-text-secondary);
     cursor: pointer;
@@ -603,7 +687,7 @@ body.localized-page a {
     width: 34px;
     min-height: 34px;
     border: 1px solid var(--color-border);
-    border-radius: 999px;
+    border-radius: var(--radius-pill);
     background: var(--color-card);
     box-shadow: var(--shadow-soft);
     color: var(--color-link);
@@ -674,7 +758,7 @@ body.localized-page a {
         gap: 16px 12px;
     }
 
-    .brand {
+    .brand-stack {
         grid-area: brand;
     }
 
@@ -685,6 +769,10 @@ body.localized-page a {
     .header-side {
         grid-area: controls;
         justify-self: end;
+    }
+
+    .theme-menu {
+        min-width: 156px;
     }
 
     .section-head,
@@ -736,7 +824,7 @@ body.localized-page a {
     .news-modal-dialog {
         max-height: min(84vh, 720px);
         padding: 24px 18px 18px;
-        border-radius: 24px;
+        border-radius: var(--radius-modal-mobile);
     }
 
 }

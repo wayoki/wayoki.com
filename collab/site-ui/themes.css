@@ -1,0 +1,8 @@
+/*
+ * Safe editable theme-pack manifest.
+ * Add or remove theme packs here without touching core CSS files.
+ */
+@import url("/collab/site-ui/themes/light.css");
+@import url("/collab/site-ui/themes/dark.css");
+@import url("/collab/site-ui/themes/author-1.css");
+@import url("/collab/site-ui/themes/author-2.css");

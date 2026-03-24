@@ -1,0 +1,171 @@
+:root,
+html[data-theme="light"] {
+    --theme-color-scheme: light;
+
+    --color-accent: #d31717;
+    --color-accent-hover: #d31717;
+
+    --color-bg: #f8f6f1;
+    --color-bg-secondary: #f1ede5;
+    --color-bg-tertiary: #ebe7de;
+    --color-bg-highlight: rgba(255, 255, 255, 0.86);
+    --color-bg-glow: rgba(255, 255, 255, 0.24);
+    --color-bg-accent: rgba(255, 255, 255, 0.14);
+
+    --color-surface: rgba(255, 255, 255, 0.54);
+    --color-surface-strong: rgba(255, 255, 255, 0.68);
+    --color-surface-elevated: rgba(246, 244, 239, 0.82);
+    --color-card: var(--color-surface);
+    --color-card-strong: var(--color-surface-strong);
+    --color-chip: rgba(255, 255, 255, 0.6);
+    --color-chip-hover: rgba(255, 255, 255, 0.76);
+    --color-toggle-active: rgba(10, 9, 8, 0.1);
+
+    --color-text-primary: #0a0908;
+    --color-text-secondary: rgba(10, 9, 8, 0.74);
+    --color-text-muted: rgba(10, 9, 8, 0.56);
+
+    --color-border: rgba(10, 9, 8, 0.12);
+    --color-border-strong: rgba(10, 9, 8, 0.18);
+    --color-border-inset: rgba(255, 255, 255, 0.74);
+
+    --color-link: rgba(10, 9, 8, 0.66);
+    --color-link-hover: #0a0908;
+
+    --color-overlay: rgba(10, 9, 8, 0.4);
+    --shadow-soft: 0 18px 36px rgba(18, 15, 7, 0.05);
+    --shadow-medium: 0 14px 30px rgba(18, 15, 7, 0.04);
+    --shadow-large: 0 30px 60px rgba(18, 15, 7, 0.06);
+
+    --brand-credit-color: rgba(10, 9, 8, 0.56);
+    --brand-credit-font-size: 10px;
+    --brand-credit-letter-spacing: 0.22em;
+
+    --landing-color-bg: #000;
+    --landing-color-text-primary: #fff;
+    --landing-color-text-secondary: rgba(255, 255, 255, 0.9);
+    --landing-color-pixel: #050505;
+    --landing-color-divider: rgba(5, 5, 5, 0.72);
+
+    --landing-paper-bg: #f6f4ef;
+    --landing-paper-text: #050505;
+    --landing-paper-gradient:
+        radial-gradient(
+            circle at 50% 38%,
+            rgba(255, 255, 255, 0.98) 0%,
+            rgba(242, 240, 234, 0.94) 58%,
+            rgba(229, 226, 218, 0.88) 100%
+        );
+
+    --landing-screen-grid:
+        repeating-linear-gradient(
+            to bottom,
+            rgba(255, 255, 255, 0.05) 0,
+            rgba(255, 255, 255, 0.05) 1px,
+            rgba(0, 0, 0, 0.05) 1px,
+            rgba(0, 0, 0, 0.05) 2px,
+            transparent 2px,
+            transparent 4px
+        );
+    --landing-screen-vignette:
+        radial-gradient(
+            circle at center,
+            transparent 52%,
+            rgba(0, 0, 0, 0.22) 78%,
+            rgba(0, 0, 0, 0.5) 100%
+        );
+    --landing-intro-background:
+        radial-gradient(circle at center, rgba(255, 255, 255, 0.025) 0%, rgba(0, 0, 0, 0) 48%),
+        var(--landing-color-bg);
+    --landing-intro-sweep:
+        linear-gradient(
+            to bottom,
+            transparent 0%,
+            rgba(255, 255, 255, 0.04) 46%,
+            rgba(255, 255, 255, 0.08) 50%,
+            rgba(255, 255, 255, 0.04) 54%,
+            transparent 100%
+        );
+    --landing-intro-flicker: rgba(255, 255, 255, 0.015);
+
+    --landing-hero-glow:
+        0 0 7px rgba(255, 255, 255, 0.24),
+        0 0 18px rgba(255, 255, 255, 0.1),
+        0 0 30px rgba(255, 255, 255, 0.05);
+    --landing-hero-glitch-glow:
+        0 0 7px rgba(255, 255, 255, 0.18),
+        0 0 20px rgba(255, 255, 255, 0.06);
+    --landing-cursor-glow: 0 0 8px rgba(255, 255, 255, 0.14);
+    --landing-loading-glow:
+        0 0 4px rgba(255, 255, 255, 0.12),
+        0 0 10px rgba(255, 255, 255, 0.04);
+
+    --landing-start-glow:
+        0 0 2px rgba(0, 0, 0, 0.18),
+        0 0 12px rgba(255, 255, 255, 0.45);
+    --landing-start-label-glow:
+        0 0 1px rgba(0, 0, 0, 0.28),
+        0 0 10px rgba(255, 255, 255, 0.46);
+    --landing-start-glitch-top:
+        -1px 0 0 rgba(211, 23, 23, 0.4),
+        -2px 0 0 rgba(5, 5, 5, 0.24);
+    --landing-start-glitch-bottom:
+        1px 0 0 rgba(5, 5, 5, 0.32),
+        2px 0 0 rgba(211, 23, 23, 0.22);
+    --landing-start-hover-glow:
+        0 0 2px rgba(0, 0, 0, 0.22),
+        0 0 18px rgba(255, 255, 255, 0.62);
+    --landing-language-glow:
+        0 0 1px rgba(0, 0, 0, 0.24),
+        0 0 10px rgba(255, 255, 255, 0.4);
+    --landing-language-hover-glow:
+        0 0 1px rgba(0, 0, 0, 0.3),
+        0 0 14px rgba(255, 255, 255, 0.52);
+    --landing-pixel-shadow:
+        0 -4px 0 var(--landing-color-pixel),
+        0 4px 0 var(--landing-color-pixel),
+        -4px 0 0 var(--landing-color-pixel),
+        4px 0 0 var(--landing-color-pixel),
+        -2px -2px 0 var(--landing-color-pixel),
+        2px -2px 0 var(--landing-color-pixel),
+        -2px 2px 0 var(--landing-color-pixel),
+        2px 2px 0 var(--landing-color-pixel);
+
+    --landing-media-link-glow:
+        0 0 8px rgba(211, 23, 23, 0.24),
+        0 0 18px rgba(211, 23, 23, 0.12);
+    --landing-media-link-photo-glow:
+        0 0 5px rgba(211, 23, 23, 0.16),
+        0 0 12px rgba(255, 255, 255, 0.35);
+    --landing-media-link-active-glow:
+        0 0 10px rgba(211, 23, 23, 0.3),
+        0 0 20px rgba(211, 23, 23, 0.2);
+
+    --landing-photo-noise:
+        radial-gradient(circle at 18% 24%, rgba(0, 0, 0, 0.24) 0 1px, transparent 1.5px),
+        radial-gradient(circle at 72% 68%, rgba(0, 0, 0, 0.2) 0 1px, transparent 1.6px),
+        radial-gradient(circle at 42% 78%, rgba(0, 0, 0, 0.16) 0 1px, transparent 1.3px),
+        radial-gradient(circle at 82% 16%, rgba(0, 0, 0, 0.18) 0 1px, transparent 1.4px),
+        repeating-linear-gradient(
+            90deg,
+            rgba(0, 0, 0, 0.08) 0 1px,
+            transparent 1px 5px,
+            rgba(0, 0, 0, 0.12) 5px 6px,
+            transparent 6px 13px
+        ),
+        repeating-linear-gradient(
+            0deg,
+            rgba(0, 0, 0, 0.05) 0 1px,
+            transparent 1px 6px,
+            rgba(0, 0, 0, 0.09) 6px 7px,
+            transparent 7px 14px
+        ),
+        linear-gradient(0deg, rgba(255, 255, 255, 0.54), rgba(255, 255, 255, 0.54));
+    --landing-photo-vignette:
+        radial-gradient(circle at center, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0) 58%),
+        radial-gradient(circle at center, rgba(0, 0, 0, 0.08) 78%, rgba(0, 0, 0, 0.18) 100%);
+    --landing-photo-text-glow:
+        0 0 1px rgba(0, 0, 0, 0.2),
+        0 0 14px rgba(255, 255, 255, 0.52);
+    --landing-photo-cursor-outline: 0 0 0 1px rgba(0, 0, 0, 0.08);
+}
