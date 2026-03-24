@@ -1,0 +1,14 @@
+{
+  "themeName": "test-theme",
+  "authorName": "wayoki",
+  "creditText": "by: wayoki",
+  "submittedAt": "2026-03-24T15:41:14.023871+00:00",
+  "tokens": {
+    "--color-bg": "#0b0b0d",
+    "--color-text-primary": "#f2eee4"
+  },
+  "meta": {
+    "siteLocale": "ru",
+    "page": "/ru/"
+  }
+}
