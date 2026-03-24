@@ -550,6 +550,18 @@ function ensureNewsModal(labels) {
     };
 }
 
+function hasArchiveNewsDom(elements) {
+    return Boolean(elements && elements.newsSection && elements.newsList);
+}
+
+function hasHomeNewsDom(elements) {
+    return Boolean(hasArchiveNewsDom(elements) && elements.newsFeature);
+}
+
+function hasRenderableNewsDom(elements, archiveView) {
+    return archiveView ? hasArchiveNewsDom(elements) : hasHomeNewsDom(elements);
+}
+
 function renderHomeNews(items, elements, labels) {
     const latestItems = items.slice(0, 3);
 
@@ -563,8 +575,13 @@ function renderHomeNews(items, elements, labels) {
         elements.newsTeaser.textContent = featuredItem.title;
     }
 
-    elements.newsFeature.replaceChildren(buildFeatureNews(featuredItem, labels));
-    elements.newsList.replaceChildren(...cardItems.map((item) => buildNewsCard(item, labels)));
+    if (elements.newsFeature) {
+        elements.newsFeature.replaceChildren(buildFeatureNews(featuredItem, labels));
+    }
+
+    if (elements.newsList) {
+        elements.newsList.replaceChildren(...cardItems.map((item) => buildNewsCard(item, labels)));
+    }
 }
 
 function renderArchiveNews(items, elements, labels) {
@@ -583,7 +600,10 @@ function renderArchiveNews(items, elements, labels) {
             elements.newsEmpty.textContent = labels.archiveEmpty;
         }
 
-        elements.newsList.replaceChildren();
+        if (elements.newsList) {
+            elements.newsList.replaceChildren();
+        }
+
         return;
     }
 
@@ -591,7 +611,9 @@ function renderArchiveNews(items, elements, labels) {
         elements.newsTeaser.textContent = archiveItems[0].title;
     }
 
-    elements.newsList.replaceChildren(...archiveItems.map((item) => buildNewsCard(item, labels)));
+    if (elements.newsList) {
+        elements.newsList.replaceChildren(...archiveItems.map((item) => buildNewsCard(item, labels)));
+    }
 }
 
 function syncNewsStore(items, newsStore) {
@@ -668,6 +690,10 @@ function renderArchiveNewsStatus(elements, teaser, message) {
 }
 
 function renderNewsSection(items, context) {
+    if (!context || !hasRenderableNewsDom(context.elements, context.archiveView)) {
+        return;
+    }
+
     const normalizedItems = Array.isArray(items) ? items : [];
 
     syncNewsStore(normalizedItems, context.newsStore);
@@ -947,11 +973,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    if (!elements.newsList) {
-        return;
-    }
-
-    if (!archiveView && !elements.newsFeature) {
+    if (!hasRenderableNewsDom(elements, archiveView)) {
         return;
     }
 
