@@ -15,9 +15,6 @@
 
     /* Brand lockup tokens */
     --brand-lockup-width: auto;
-    --brand-credit-color: var(--color-text-muted);
-    --brand-credit-font-size: 10px;
-    --brand-credit-letter-spacing: 0.22em;
     --brand-credit-row-gap: 4px;
 
     /* Shared semantic tokens */
@@ -40,4 +37,42 @@
     --feature-plaque-shadow:
         var(--shadow-large),
         inset 0 1px 0 var(--color-border-inset);
+
+    --search-bg: var(--color-chip);
+    --search-border: var(--color-border);
+    --search-text: var(--color-text-primary);
+    --search-placeholder: var(--color-text-muted);
+    --search-dropdown-bg: var(--color-bg-secondary);
+    --search-result-hover: var(--color-surface-elevated);
+    --search-result-active: var(--color-chip-hover);
+    --search-highlight-bg: var(--color-toggle-active);
+    --search-highlight-text: var(--color-text-primary);
+    --search-dropdown-shadow: var(--shadow-large);
+
+    --editor-bg: rgba(247, 245, 240, 0.97);
+    --editor-surface: #fffdfa;
+    --editor-surface-strong: #f1ece3;
+    --editor-border: rgba(23, 20, 16, 0.12);
+    --editor-border-strong: rgba(23, 20, 16, 0.18);
+    --editor-text: #15120f;
+    --editor-muted: rgba(21, 18, 15, 0.62);
+    --editor-control-bg: #ffffff;
+    --editor-control-hover: #f5f0e8;
+    --editor-control-text: #15120f;
+    --editor-popover-bg: #fffdfa;
+    --editor-popover-border: rgba(23, 20, 16, 0.14);
+    --editor-accent: #2a241f;
+    --editor-accent-strong: #181410;
+    --editor-overlay: rgba(17, 14, 10, 0.34);
+    --editor-shadow: 0 28px 60px rgba(20, 16, 11, 0.18);
+    --editor-highlight: rgba(21, 18, 15, 0.12);
+    --editor-highlight-strong: rgba(21, 18, 15, 0.28);
+
+    --theme-editor-overlay: var(--editor-overlay);
+    --theme-editor-panel-bg: var(--editor-bg);
+    --theme-editor-panel-border: var(--editor-border);
+    --theme-editor-panel-shadow: var(--editor-shadow);
+    --theme-editor-card-bg: var(--editor-surface);
+    --theme-editor-card-border: var(--editor-border);
+    --theme-editor-swatch-border: var(--editor-border-strong);
 }

@@ -3,6 +3,7 @@ const themeRuntime = window.WayokiThemeSwitcher || null;
 const newsFeedUrl = "https://script.google.com/macros/s/AKfycbwk3ctmn8qMPDTxkLBoz1K3uSZbN4ICpu70hooE4kGI0TCJtvZt2Rcz4IxNNfhnbn7p/exec";
 const newsCacheStorageKey = "wayoki_news_cache";
 const newsFallbackUrl = "https://t.me/wayoki";
+const themeDraftRuntime = window.WayokiThemeEditorDraft || null;
 const newsPreviewLimits = {
     feature: 180,
     card: 120
@@ -70,6 +71,55 @@ function selectTheme(theme) {
     }
 
     return nextTheme;
+}
+
+function getThemeCatalog() {
+    if (themeRuntime && themeRuntime.themeCatalog && typeof themeRuntime.themeCatalog === "object") {
+        return themeRuntime.themeCatalog;
+    }
+
+    return {};
+}
+
+function getThemeMeta(theme) {
+    if (themeRuntime && typeof themeRuntime.getThemeMeta === "function") {
+        return themeRuntime.getThemeMeta(theme) || null;
+    }
+
+    return getThemeCatalog()[normalizeTheme(theme)] || null;
+}
+
+function isAuthorTheme(theme) {
+    const themeMeta = getThemeMeta(theme);
+
+    return Boolean(themeMeta && themeMeta.group === "author");
+}
+
+function getThemeDisplayLabel(theme) {
+    const themeMeta = getThemeMeta(theme);
+    const explicitLabel = textValue(themeMeta && themeMeta.label);
+
+    if (explicitLabel) {
+        return explicitLabel;
+    }
+
+    if (theme === "light") {
+        return "Light";
+    }
+
+    if (theme === "dark") {
+        return "Dark";
+    }
+
+    return theme;
+}
+
+function getAuthorThemeEntries() {
+    return Object.entries(getThemeCatalog()).filter((entry) => {
+        const meta = entry[1];
+
+        return meta && meta.group === "author";
+    });
 }
 
 function detectLocale() {
@@ -509,7 +559,10 @@ function renderHomeNews(items, elements, labels) {
 
     const [featuredItem, ...cardItems] = latestItems;
 
-    elements.newsTeaser.textContent = featuredItem.title;
+    if (elements.newsTeaser) {
+        elements.newsTeaser.textContent = featuredItem.title;
+    }
+
     elements.newsFeature.replaceChildren(buildFeatureNews(featuredItem, labels));
     elements.newsList.replaceChildren(...cardItems.map((item) => buildNewsCard(item, labels)));
 }
@@ -690,10 +743,16 @@ function prefetchNews(locale, options = {}) {
 
 applyTheme(readStoredTheme());
 
+if (themeDraftRuntime && typeof themeDraftRuntime.applyStoredDraftPreview === "function") {
+    themeDraftRuntime.applyStoredDraftPreview();
+}
+
 document.addEventListener("DOMContentLoaded", () => {
-    const themeButtons = document.querySelectorAll("[data-theme-option]");
+    let themeButtons = document.querySelectorAll("[data-theme-option]");
     const themeMenuToggle = document.querySelector("[data-theme-menu-toggle]");
     const themeMenu = document.querySelector("[data-theme-menu]");
+    const customThemeToggle = document.querySelector("[data-theme-custom-toggle]");
+    const customThemeList = document.querySelector("[data-theme-custom-list]");
     const locale = detectLocale();
     const archiveView = isArchivePage();
     const newsStore = new Map();
@@ -761,6 +820,59 @@ document.addEventListener("DOMContentLoaded", () => {
 
             button.setAttribute("aria-pressed", String(isActive));
         });
+
+        if (customThemeToggle) {
+            customThemeToggle.setAttribute("aria-pressed", String(isAuthorTheme(theme)));
+        }
+    }
+
+    function buildThemeButton(theme, className) {
+        const button = document.createElement("button");
+        const label = document.createElement("span");
+
+        button.className = className;
+        button.type = "button";
+        button.dataset.themeOption = theme;
+        button.setAttribute("aria-pressed", "false");
+        button.setAttribute("aria-label", getThemeDisplayLabel(theme));
+
+        label.className = "theme-button-label";
+        label.textContent = getThemeDisplayLabel(theme);
+        button.append(label);
+
+        return button;
+    }
+
+    function populateCustomThemeList() {
+        if (!customThemeList) {
+            return;
+        }
+
+        customThemeList.textContent = "";
+
+        getAuthorThemeEntries().forEach(([themeName]) => {
+            customThemeList.append(
+                buildThemeButton(themeName, "theme-button theme-button-option theme-button-option-custom")
+            );
+        });
+
+        themeButtons = document.querySelectorAll("[data-theme-option]");
+
+        if (customThemeToggle) {
+            customThemeToggle.hidden = !customThemeList.children.length;
+            customThemeToggle.setAttribute("aria-expanded", String(isAuthorTheme(readStoredTheme())));
+        }
+
+        customThemeList.hidden = !customThemeList.children.length || !isAuthorTheme(readStoredTheme());
+    }
+
+    function setCustomThemeListOpen(nextOpen) {
+        if (!customThemeList || !customThemeToggle || customThemeToggle.hidden) {
+            return;
+        }
+
+        customThemeList.hidden = !nextOpen;
+        customThemeToggle.setAttribute("aria-expanded", String(nextOpen));
     }
 
     function setThemeMenuOpen(nextOpen) {
@@ -770,11 +882,24 @@ document.addEventListener("DOMContentLoaded", () => {
 
         themeMenu.hidden = !nextOpen;
         themeMenuToggle.setAttribute("aria-expanded", String(nextOpen));
+
+        if (!nextOpen && !isAuthorTheme(document.documentElement.dataset.theme)) {
+            setCustomThemeListOpen(false);
+        }
     }
+
+    populateCustomThemeList();
 
     const initialTheme = applyTheme(readStoredTheme());
 
-    syncThemeButtons(initialTheme);
+    if (themeDraftRuntime && typeof themeDraftRuntime.applyStoredDraftPreview === "function") {
+        themeDraftRuntime.applyStoredDraftPreview();
+    }
+
+    const activeTheme = textValue(document.documentElement.dataset.theme) || initialTheme;
+
+    syncThemeButtons(activeTheme);
+    setCustomThemeListOpen(isAuthorTheme(activeTheme));
 
     if (themeMenuToggle && themeMenu) {
         setThemeMenuOpen(false);
@@ -796,6 +921,12 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
+    if (customThemeToggle && customThemeList) {
+        customThemeToggle.addEventListener("click", () => {
+            setCustomThemeListOpen(customThemeList.hidden);
+        });
+    }
+
     document.addEventListener("click", (event) => {
         const button = event.target.closest("[data-theme-option]");
 
@@ -806,6 +937,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const nextTheme = selectTheme(button.dataset.themeOption);
 
         syncThemeButtons(nextTheme);
+        setCustomThemeListOpen(isAuthorTheme(nextTheme));
     });
 
     document.addEventListener("keydown", (event) => {

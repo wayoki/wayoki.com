@@ -1,13 +1,13 @@
 <!DOCTYPE html>
-<html lang="ru" data-theme="light">
+<html lang="en" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta
         name="description"
-        content="WAYOKI представляет Kaidan — сдержанный лиминальный хоррор-проект и компактную ленту новостей."
+        content="WAYOKI customization mode for adjusting and submitting your own theme preset."
     >
-    <title>WAYOKI</title>
+    <title>WAYOKI Theme Customization</title>
     <link rel="icon" type="image/png" href="/assets/img/logo.png">
     <script src="/collab/site-ui/theme-registry.js"></script>
     <script src="/assets/js/theme-switcher.js"></script>
@@ -23,10 +23,10 @@
     <link rel="stylesheet" href="/assets/css/localized.css">
     <script src="/assets/js/localized-home.js" defer></script>
 </head>
-<body class="localized-page">
+<body class="localized-page customization-route">
     <header class="site-header">
         <div class="brand-stack">
-            <a class="brand" href="/ru/" aria-label="Главная WAYOKI на русском">WAYOKI</a>
+            <a class="brand" href="/en/customization/" aria-label="WAYOKI English customization mode">WAYOKI</a>
             <p class="brand-credit" data-theme-credit aria-live="polite" hidden>by author</p>
         </div>
         <div class="header-search" data-quick-search data-open="false">
@@ -44,23 +44,23 @@
                     autocomplete="off"
                     spellcheck="false"
                     enterkeyhint="go"
-                    placeholder="Быстрый переход: проект, новости, архив"
+                    placeholder="Quick jump: project, news, archive"
                     data-quick-search-input
                     role="combobox"
                     aria-autocomplete="list"
                     aria-expanded="false"
-                    aria-controls="quick-search-results-ru-home"
+                    aria-controls="quick-search-results-en-customization"
                 >
             </div>
             <div class="quick-search-dropdown" data-quick-search-dropdown hidden>
-                <ul class="quick-search-results" id="quick-search-results-ru-home" data-quick-search-results role="listbox"></ul>
+                <ul class="quick-search-results" id="quick-search-results-en-customization" data-quick-search-results role="listbox"></ul>
                 <p class="quick-search-empty" data-quick-search-empty hidden></p>
             </div>
         </div>
         <div class="header-side">
-            <nav class="locale-nav" aria-label="Переключение языка">
-                <a class="locale-link" href="/ru/" aria-current="page">RU</a>
-                <a class="locale-link" href="/en/">EN</a>
+            <nav class="locale-nav" aria-label="Language switcher">
+                <a class="locale-link" href="/ru/customization/">RU</a>
+                <a class="locale-link" href="/en/customization/" aria-current="page">EN</a>
             </nav>
             <div class="theme-stack">
                 <div class="theme-stack-controls">
@@ -68,19 +68,19 @@
                         class="theme-button theme-menu-toggle"
                         type="button"
                         data-theme-menu-toggle
-                        aria-label="Показать темы"
-                        aria-controls="theme-menu-ru-home"
+                        aria-label="Show themes"
+                        aria-controls="theme-menu-en-customization"
                         aria-expanded="false"
                     >
-                        <span class="theme-menu-toggle-text">Темы</span>
+                        <span class="theme-menu-toggle-text">Themes</span>
                     </button>
                 </div>
-                <div class="theme-menu" id="theme-menu-ru-home" data-theme-menu hidden role="group" aria-label="Тема">
+                <div class="theme-menu" id="theme-menu-en-customization" data-theme-menu hidden role="group" aria-label="Theme">
                     <button
                         class="theme-button theme-button-option"
                         type="button"
                         data-theme-option="light"
-                        aria-label="Светлая тема"
+                        aria-label="Light theme"
                         aria-pressed="true"
                     >
                         <svg class="theme-icon theme-icon-sun" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
@@ -93,17 +93,17 @@
                         class="theme-button theme-button-option"
                         type="button"
                         data-theme-option="dark"
-                        aria-label="Тёмная тема"
+                        aria-label="Dark theme"
                         aria-pressed="false"
                     >
                         <svg class="theme-icon theme-icon-moon" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
                             <defs>
-                                <mask id="theme-menu-moon-mask-ru-home">
+                                <mask id="theme-menu-moon-mask-en-customization">
                                     <rect width="16" height="16" fill="var(--color-mask-visible)"></rect>
                                     <circle cx="10.8" cy="5.9" r="4.8" fill="var(--color-mask-hidden)"></circle>
                                 </mask>
                             </defs>
-                            <circle cx="7.4" cy="8" r="5.6" fill="currentColor" mask="url(#theme-menu-moon-mask-ru-home)"></circle>
+                            <circle cx="7.4" cy="8" r="5.6" fill="currentColor" mask="url(#theme-menu-moon-mask-en-customization)"></circle>
                         </svg>
                         <span class="theme-button-label">Dark</span>
                     </button>
@@ -111,7 +111,7 @@
                         class="theme-button theme-button-option theme-button-option-group"
                         type="button"
                         data-theme-custom-toggle
-                        aria-label="Показать кастомные темы"
+                        aria-label="Show custom themes"
                         aria-expanded="false"
                         aria-pressed="false"
                     >
@@ -131,14 +131,15 @@
                     <div class="theme-menu-submenu" data-theme-custom-list hidden></div>
                     <a
                         class="theme-button theme-button-option theme-button-option-create"
-                        href="/ru/customization/"
+                        href="/en/customization/"
                         data-theme-create-link
-                        aria-label="Создай свою тему"
+                        aria-label="Create your theme"
+                        aria-current="page"
                     >
                         <svg class="theme-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
                             <path d="M8 3V13M3 8H13"></path>
                         </svg>
-                        <span class="theme-button-label">Создай свою тему</span>
+                        <span class="theme-button-label">Create your theme</span>
                     </a>
                 </div>
             </div>
@@ -147,13 +148,13 @@
 
     <main class="page-main">
         <section class="feature-section" aria-labelledby="game-title">
-            <p class="section-label">Текущий проект</p>
+            <p class="section-label">Featured project</p>
             <div class="feature-plaque">
                 <p class="game-title-jp" lang="ja">カイダン</p>
                 <h1 class="game-title-latin" id="game-title">Kaidan</h1>
                 <p class="feature-copy">
-                    Бесконечная лестница. Знакомый подъезд. Тихий лиминальный ужас, который
-                    уговаривает подняться ещё на один пролёт выше.
+                    An endless stairwell. A familiar apartment entry. A quiet liminal horror
+                    that keeps asking you to climb one landing higher.
                 </p>
             </div>
         </section>
@@ -161,26 +162,23 @@
         <section class="news-section" id="news" aria-labelledby="news-title">
             <div class="section-head">
                 <div>
-                    <p class="section-label">Новости</p>
-                    <h2 class="section-title" id="news-title">Последние обновления</h2>
+                    <p class="section-label">News</p>
+                    <h2 class="section-title" id="news-title">Recent updates</h2>
                 </div>
-                <a
-                    class="archive-link"
-                    href="/ru/news/"
-                >
-                    Предыдущие новости
+                <a class="archive-link" href="/en/news/">
+                    More news
                 </a>
             </div>
 
             <p class="news-note">
-                Этот раздел читает живую публичную ленту и оставляет на главной только три самые свежие новости.
+                This section reads from the live public feed and keeps only the three newest updates on the homepage.
             </p>
 
             <div class="news-feed">
                 <article class="news-feature" data-news-feature>
-                    <h3 class="news-feature-title">Живые обновления появятся здесь, когда лента будет доступна.</h3>
+                    <h3 class="news-feature-title">Live updates appear here when the feed is reachable.</h3>
                     <p class="news-feature-preview">
-                        Если сервис новостей временно недоступен, последние студийные заметки всё равно можно открыть напрямую в Telegram.
+                        If the news service is temporarily unavailable, the latest studio notes can still be opened directly from Telegram.
                     </p>
                     <a
                         class="news-link"
@@ -188,15 +186,15 @@
                         target="_blank"
                         rel="noopener noreferrer"
                     >
-                        Открыть заметку
+                        Read note
                     </a>
                 </article>
 
                 <ol class="news-list" data-news-list>
                     <li class="news-item">
-                        <h3 class="news-item-title">Следующие обновления появятся, как только ответит живая лента.</h3>
+                        <h3 class="news-item-title">More updates appear as the live feed responds.</h3>
                         <p class="news-preview">
-                            Длинные тексты открываются в отдельном окне, а более старые записи уходят на страницу архива.
+                            Longer notes open in an overlay, while older entries move to the dedicated archive page.
                         </p>
                         <a
                             class="news-link"
@@ -204,7 +202,7 @@
                             target="_blank"
                             rel="noopener noreferrer"
                         >
-                            Открыть заметку
+                            Read note
                         </a>
                     </li>
                 </ol>
@@ -215,7 +213,7 @@
     <footer class="site-footer">
         <div class="footer-group footer-group-social">
             <div class="footer-heading">
-                <p class="footer-label">Соцсети</p>
+                <p class="footer-label">Social</p>
                 <span class="footer-divider" aria-hidden="true">|</span>
             </div>
             <div class="footer-links footer-links-social">
@@ -263,7 +261,7 @@
         </div>
         <div class="footer-group footer-group-sites">
             <div class="footer-heading">
-                <p class="footer-label">Наши сайты</p>
+                <p class="footer-label">Our websites</p>
                 <span class="footer-divider" aria-hidden="true">|</span>
             </div>
             <div class="footer-links footer-links-sites">

@@ -40,10 +40,6 @@ html[data-theme="dark"] {
     --feature-plaque-background: #17191c;
     --feature-plaque-shadow: var(--shadow-large);
 
-    --brand-credit-color: rgba(242, 238, 228, 0.63);
-    --brand-credit-font-size: 10px;
-    --brand-credit-letter-spacing: 0.2em;
-
     --landing-color-bg: #050607;
     --landing-color-text-primary: #fffdf7;
     --landing-color-text-secondary: rgba(255, 253, 247, 0.9);

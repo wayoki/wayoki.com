@@ -39,10 +39,6 @@ html[data-theme="author-2"] {
     --feature-plaque-background: #142126;
     --feature-plaque-shadow: var(--shadow-large);
 
-    --brand-credit-color: rgba(237, 243, 238, 0.62);
-    --brand-credit-font-size: 9px;
-    --brand-credit-letter-spacing: 0.14em;
-
     --landing-color-bg: #031013;
     --landing-color-text-primary: #edf8f1;
     --landing-color-text-secondary: rgba(237, 248, 241, 0.88);

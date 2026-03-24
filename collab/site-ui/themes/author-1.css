@@ -36,10 +36,6 @@ html[data-theme="author-1"] {
     --shadow-medium: 0 14px 30px rgba(36, 27, 17, 0.05);
     --shadow-large: 0 30px 60px rgba(36, 27, 17, 0.08);
 
-    --brand-credit-color: rgba(22, 19, 17, 0.56);
-    --brand-credit-font-size: 9px;
-    --brand-credit-letter-spacing: 0.18em;
-
     --landing-color-bg: #120f0d;
     --landing-color-text-primary: #fff7ef;
     --landing-color-text-secondary: rgba(255, 247, 239, 0.9);

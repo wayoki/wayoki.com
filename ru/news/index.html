@@ -12,6 +12,12 @@
     <script src="/collab/site-ui/theme-registry.js"></script>
     <script src="/assets/js/theme-switcher.js"></script>
     <script src="/assets/js/news-prefetch.js"></script>
+    <script src="/assets/js/theme-submit-config.js"></script>
+    <script src="/assets/js/theme-editor-config.js"></script>
+    <script src="/assets/js/search-index.js" defer></script>
+    <script src="/assets/js/quick-search.js" defer></script>
+    <script src="/assets/js/theme-submit.js" defer></script>
+    <script src="/assets/js/theme-editor.js" defer></script>
     <link rel="stylesheet" href="/assets/css/theme.css">
     <link rel="stylesheet" href="/assets/css/base.css">
     <link rel="stylesheet" href="/assets/css/localized.css">
@@ -23,26 +29,52 @@
             <a class="brand" href="/ru/" aria-label="Главная WAYOKI на русском">WAYOKI</a>
             <p class="brand-credit" data-theme-credit aria-live="polite" hidden>by author</p>
         </div>
-        <a class="header-news" href="#news" aria-label="Перейти к архиву новостей">
-            <span class="header-news-label">Новости</span>
-            <span class="header-news-text" data-news-teaser>Предыдущие заметки и архивные обновления.</span>
-        </a>
+        <div class="header-search" data-quick-search data-open="false">
+            <div class="quick-search">
+                <span class="quick-search-icon" aria-hidden="true">
+                    <svg viewBox="0 0 16 16" focusable="false">
+                        <circle cx="7" cy="7" r="4.25"></circle>
+                        <path d="M10.2 10.2 14 14"></path>
+                    </svg>
+                </span>
+                <input
+                    class="quick-search-input"
+                    type="search"
+                    inputmode="search"
+                    autocomplete="off"
+                    spellcheck="false"
+                    enterkeyhint="go"
+                    placeholder="Быстрый переход: проект, новости, архив"
+                    data-quick-search-input
+                    role="combobox"
+                    aria-autocomplete="list"
+                    aria-expanded="false"
+                    aria-controls="quick-search-results-ru-archive"
+                >
+            </div>
+            <div class="quick-search-dropdown" data-quick-search-dropdown hidden>
+                <ul class="quick-search-results" id="quick-search-results-ru-archive" data-quick-search-results role="listbox"></ul>
+                <p class="quick-search-empty" data-quick-search-empty hidden></p>
+            </div>
+        </div>
         <div class="header-side">
             <nav class="locale-nav" aria-label="Переключение языка">
                 <a class="locale-link" href="/ru/news/" aria-current="page">RU</a>
                 <a class="locale-link" href="/en/news/">EN</a>
             </nav>
             <div class="theme-stack">
-                <button
-                    class="theme-button theme-menu-toggle"
-                    type="button"
-                    data-theme-menu-toggle
-                    aria-label="Показать темы"
-                    aria-controls="theme-menu-ru-archive"
-                    aria-expanded="false"
-                >
-                    <span class="theme-menu-toggle-text">Темы</span>
-                </button>
+                <div class="theme-stack-controls">
+                    <button
+                        class="theme-button theme-menu-toggle"
+                        type="button"
+                        data-theme-menu-toggle
+                        aria-label="Показать темы"
+                        aria-controls="theme-menu-ru-archive"
+                        aria-expanded="false"
+                    >
+                        <span class="theme-menu-toggle-text">Темы</span>
+                    </button>
+                </div>
                 <div class="theme-menu" id="theme-menu-ru-archive" data-theme-menu hidden role="group" aria-label="Тема">
                     <button
                         class="theme-button theme-button-option"
@@ -55,7 +87,7 @@
                             <circle cx="8" cy="8" r="2.75"></circle>
                             <path d="M8 1.5V3.5M8 12.5V14.5M1.5 8H3.5M12.5 8H14.5M3.1 3.1L4.5 4.5M11.5 11.5L12.9 12.9M12.9 3.1L11.5 4.5M4.5 11.5L3.1 12.9"></path>
                         </svg>
-                        <span class="theme-button-label">light</span>
+                        <span class="theme-button-label">Light</span>
                     </button>
                     <button
                         class="theme-button theme-button-option"
@@ -73,26 +105,41 @@
                             </defs>
                             <circle cx="7.4" cy="8" r="5.6" fill="currentColor" mask="url(#theme-menu-moon-mask-ru-archive)"></circle>
                         </svg>
-                        <span class="theme-button-label">dark</span>
+                        <span class="theme-button-label">Dark</span>
                     </button>
                     <button
-                        class="theme-button theme-button-option"
+                        class="theme-button theme-button-option theme-button-option-group"
                         type="button"
-                        data-theme-option="author-1"
-                        aria-label="Тема автора 1"
+                        data-theme-custom-toggle
+                        aria-label="Показать кастомные темы"
+                        aria-expanded="false"
                         aria-pressed="false"
                     >
-                        <span class="theme-button-label">A1</span>
+                        <span class="theme-button-option-main">
+                            <svg class="theme-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+                                <path d="M10.8 2.2 13.8 5.2 6.2 12.8 3.2 13.8 4.2 10.8Z"></path>
+                                <path d="M9.8 3.2 12.8 6.2"></path>
+                            </svg>
+                            <span class="theme-button-label">Custom themes</span>
+                        </span>
+                        <span class="theme-button-option-trailing" aria-hidden="true">
+                            <svg class="theme-icon" viewBox="0 0 16 16" focusable="false">
+                                <path d="M6 3.5 10 8 6 12.5"></path>
+                            </svg>
+                        </span>
                     </button>
-                    <button
-                        class="theme-button theme-button-option"
-                        type="button"
-                        data-theme-option="author-2"
-                        aria-label="Тема автора 2"
-                        aria-pressed="false"
+                    <div class="theme-menu-submenu" data-theme-custom-list hidden></div>
+                    <a
+                        class="theme-button theme-button-option theme-button-option-create"
+                        href="/ru/customization/"
+                        data-theme-create-link
+                        aria-label="Создай свою тему"
                     >
-                        <span class="theme-button-label">A2</span>
-                    </button>
+                        <svg class="theme-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+                            <path d="M8 3V13M3 8H13"></path>
+                        </svg>
+                        <span class="theme-button-label">Создай свою тему</span>
+                    </a>
                 </div>
             </div>
         </div>

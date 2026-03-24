@@ -42,10 +42,6 @@ html[data-theme="your-theme-id"] {
     --shadow-medium: 0 14px 30px rgba(0, 0, 0, 0.04);
     --shadow-large: 0 30px 60px rgba(0, 0, 0, 0.06);
 
-    --brand-credit-color: var(--color-text-muted);
-    --brand-credit-font-size: 10px;
-    --brand-credit-letter-spacing: 0.18em;
-
     --landing-color-bg: #000000;
     --landing-color-text-primary: #ffffff;
     --landing-color-text-secondary: rgba(255, 255, 255, 0.9);
