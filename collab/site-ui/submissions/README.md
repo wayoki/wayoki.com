@@ -1,6 +1,6 @@
 # Theme Submissions
 
-Stable submission files live here.
+Stable merged submission files live here.
 
 Path model:
 
@@ -12,3 +12,5 @@ Rules:
 - repeated submissions update the same file
 - `createdAt` stays stable
 - `updatedAt` and `version` change on every accepted update
+- merged JSON files in this folder are the source of truth for public custom themes
+- `collab/site-ui/theme-registry.js` is generated from these files

@@ -37,7 +37,6 @@
             submitSuccess: "Тема отправлена.",
             submitFailed: "Не удалось отправить тему",
             submitUnavailableLocal: "Сабмит недоступен в локальном режиме. Проверь CORS или используй продовый домен.",
-            openPr: "Открыть PR",
             submitModalTitle: "Отправка темы",
             submitModalDescription: "Имя темы и имя автора запрашиваются только на этом шаге.",
             themeNameRequired: "Имя темы *",
@@ -71,7 +70,6 @@
             submitSuccess: "Theme submitted.",
             submitFailed: "Failed to submit theme",
             submitUnavailableLocal: "Submit is unavailable in local mode. Check CORS or use the production domain.",
-            openPr: "Open PR",
             submitModalTitle: "Submit theme",
             submitModalDescription: "Theme name and author name are only requested at this final step.",
             themeNameRequired: "Theme name *",
@@ -690,18 +688,13 @@
         }
     }
 
-    function setStatus(state, kind, message, link) {
+    function setStatus(state, kind, message) {
         state.status.hidden = !message;
         state.status.textContent = message || "";
         state.status.dataset.status = message ? kind : "";
 
-        const nextLink = textValue(link);
-
-        state.link.hidden = !nextLink;
-        state.link.href = nextLink || "#";
-
         if (state.statusRow) {
-            state.statusRow.hidden = !message && !nextLink;
+            state.statusRow.hidden = !message;
         }
     }
 
@@ -1523,7 +1516,6 @@
         const resetButton = createElement("button", "theme-button theme-editor-button theme-editor-button-secondary", state.labels.reset);
         const submitButton = createElement("button", "theme-button theme-editor-button theme-editor-button-primary", state.labels.submit);
         const status = createElement("p", "theme-editor-status");
-        const link = createElement("a", "theme-editor-link", state.labels.openPr);
 
         title.id = "theme-editor-title";
         exitLink.href = getCustomizationExitHref(state.locale);
@@ -1539,15 +1531,12 @@
         status.hidden = true;
         status.setAttribute("aria-live", "polite");
         statusRow.hidden = true;
-        link.hidden = true;
-        link.target = "_blank";
-        link.rel = "noreferrer noopener";
 
         actions.append(exitLink, resetButton, submitButton);
         controls.append(actions);
         headingGroup.append(title);
         top.append(headingGroup, controls);
-        statusRow.append(status, link);
+        statusRow.append(status);
 
         editorConfig.sections.forEach((sectionConfig) => {
             const sectionEntries = [];
@@ -1592,7 +1581,6 @@
         state.resetButton = resetButton;
         state.submitButton = submitButton;
         state.status = status;
-        state.link = link;
         state.exitLink = exitLink;
         state.resizeHandle = resizeHandle;
 
@@ -1746,8 +1734,7 @@
                             ? state.labels.submitUpdated
                             : result && result.data && result.data.action === "create"
                               ? state.labels.submitCreated
-                              : state.labels.submitSuccess,
-                        result.link
+                              : state.labels.submitSuccess
                     );
 
                     window.setTimeout(() => {

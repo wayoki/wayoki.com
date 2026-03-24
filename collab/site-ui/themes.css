@@ -1,8 +1,6 @@
 /*
- * Safe editable theme-pack manifest.
- * Add or remove theme packs here without touching core CSS files.
+ * Safe core theme-pack manifest.
+ * Custom themes come from generated submission data in theme-registry.js.
  */
 @import url("/collab/site-ui/themes/light.css");
 @import url("/collab/site-ui/themes/dark.css");
-@import url("/collab/site-ui/themes/author-1.css");
-@import url("/collab/site-ui/themes/author-2.css");

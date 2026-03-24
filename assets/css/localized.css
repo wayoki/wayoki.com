@@ -634,12 +634,6 @@ body.localized-page a {
     color: var(--color-warning);
 }
 
-.theme-editor-link {
-    font-size: 12px;
-    line-height: 1.4;
-    color: var(--editor-accent);
-}
-
 .customization-route .theme-editor-route-bar {
     display: grid;
     justify-items: center;
@@ -909,11 +903,6 @@ body.localized-page a {
 .theme-editor-submit-status {
     font-size: 12px;
     line-height: 1.5;
-}
-
-.theme-editor-link:hover,
-.theme-editor-link:focus-visible {
-    color: var(--editor-accent-strong);
 }
 
 .theme-color-picker {

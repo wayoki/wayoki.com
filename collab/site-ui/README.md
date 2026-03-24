@@ -1,64 +1,53 @@
 # Collab Site UI
 
-Эта папка предназначена для безопасного редактирования визуального слоя тем без вмешательства в core-архитектуру сайта.
+Эта папка отвечает за theme assets и generated registry для сайта.
 
-## Что здесь можно редактировать
+## Как теперь устроены темы
 
-- `themes/*.css` — theme packs: `light`, `dark`, `author-*`
-- `themes/_template.css` — шаблон для новой темы
-- `themes.css` — список подключённых theme packs
-- `theme-registry.js` — доступные темы и текст `by: ...`
+- `themes/light.css` и `themes/dark.css` — базовые core themes
+- `themes.css` — подключает только core theme packs
+- `submissions/**/*.json` — source of truth для merged custom themes
+- `theme-registry.js` — generated frontend registry, который собирается из merged submission files
 
-## За что отвечает каждый файл
+## Откуда берутся Custom themes
 
-- `themes/light.css` и `themes/dark.css` — базовые визуальные пресеты сайта
-- `themes/author-1.css`, `themes/author-2.css` — авторские пресеты
-- `themes.css` — какие theme packs реально подключаются
-- `theme-registry.js` — какие темы знает переключатель и какой credit показывать
+Custom themes больше не хардкодятся в frontend и не регистрируются вручную.
 
-## Как создать новую author theme
+Источник данных:
 
-1. Скопируйте `themes/_template.css` в новый файл, например `themes/author-3.css`.
-2. Поменяйте селектор на `html[data-theme="author-3"]`.
-3. Меняйте только токены темы: цвета, поверхности, тени, credit-токены.
-4. Добавьте новый файл в `themes.css`.
-5. Зарегистрируйте тему в `theme-registry.js`.
+`collab/site-ui/submissions/<author-slug>/<theme-slug>.json`
 
-## Где менять `by: ...`
+Каждый merged JSON из этой папки:
 
-Меняйте поле `credit` у нужной темы в `theme-registry.js`.
+- валидируется по минимальным полям `themeName`, `authorName`, `tokens`
+- превращается в entry внутри `theme-registry.js`
+- попадает в dropdown `Custom themes`
+- применяется на сайте напрямую из `tokens`
 
-Пример:
+## Что происходит после submit
 
-```js
-"author-2": {
-    group: "author",
-    credit: "by author"
-}
-```
+Submit backend:
 
-## Что нельзя трогать
+1. пишет или обновляет стабильный submission file
+2. пересобирает `theme-registry.js` из всех merged submission files + текущего submit
+3. открывает PR с обоими изменениями
 
-- `assets/css/base.css`
-- `assets/css/localized.css`
-- `assets/css/landing.css`
-- `assets/css/theme.css`
-- `assets/css/theme-tokens.css`
-- `assets/js/theme-switcher.js`
-- `assets/js/localized-home.js`
-- `assets/js/landing.js`
+После merge и deploy:
 
-Эти файлы относятся к core layer: layout, intro flow, app logic, responsive behavior и общей структуре интерфейса.
+- merged theme уже есть в `submissions/`
+- generated registry уже обновлён
+- тема появляется в dropdown без ручного редактирования кода
 
-## Ограничения для theme pack
+## Что не нужно делать вручную
 
-- Не добавляйте layout-правила, сетки, брейкпоинты и анимационную логику.
-- Не меняйте DOM-структуру через CSS-предположения.
-- Меняйте только theme tokens и безопасные визуальные значения.
+Больше не нужно:
 
-## Как быстро проверить тему
+- создавать `author-*.css` для custom themes
+- добавлять custom theme в `themes.css`
+- регистрировать custom theme руками в `theme-registry.js`
 
-1. Откройте сайт и переключите `light / dark / author-*`.
-2. Проверьте header, news bar, cards, feature block и theme menu.
-3. Убедитесь, что текст читается, borders видны, а активные состояния не исчезли.
-4. Если новая тема должна появиться в меню, предупредите core-owner: кнопки выбора темы живут вне collab-зоны.
+## Ограничения
+
+- не меняйте вручную `theme-registry.js`, если тема должна прийти из submissions
+- не храните demo themes в runtime registry
+- меняйте только safe visual tokens внутри submission payload

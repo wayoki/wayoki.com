@@ -9,6 +9,7 @@ const GITHUB_BASE_BRANCH = process.env.GITHUB_BASE_BRANCH || "main";
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN || "";
 const USER_AGENT = "wayoki-theme-submit";
 const REPO_SUBMISSIONS_ROOT = "collab/site-ui/submissions";
+const GENERATED_THEME_REGISTRY_PATH = "collab/site-ui/theme-registry.js";
 const ALLOWED_META_KEYS = ["siteLocale", "userAgent", "page"];
 
 const transliterationMap = {
@@ -106,6 +107,10 @@ function sanitizeMeta(meta) {
     }, {});
 }
 
+function buildCustomThemeId(authorSlug, themeSlug) {
+    return `submission-${authorSlug}--${themeSlug}`;
+}
+
 function buildStoredThemeDocument(payload, existingDocument, authorSlug, themeSlug, nowIso) {
     const previousVersion = Number(existingDocument && existingDocument.version);
     const hasExistingDocument = Boolean(existingDocument);
@@ -132,6 +137,7 @@ function buildPullRequestBody(options) {
         `Author: ${options.authorName} (${options.authorSlug})`,
         `Theme: ${options.themeName} (${options.themeSlug})`,
         `Path: \`${options.filePath}\``,
+        `Registry: \`${GENERATED_THEME_REGISTRY_PATH}\``,
         `Version: ${options.version}`
     ].join("\n");
 }
@@ -253,25 +259,34 @@ async function githubJson(pathname, options = {}) {
 }
 
 async function readExistingSubmission(filePath) {
+    const fileRecord = await readExistingFile(filePath);
+
+    return {
+        exists: fileRecord.exists,
+        sha: fileRecord.sha,
+        document: fileRecord.exists ? JSON.parse(fileRecord.content) : null
+    };
+}
+
+async function readExistingFile(filePath) {
     try {
         const response = await githubJson(
             `/repos/${encodeURIComponent(GITHUB_OWNER)}/${encodeURIComponent(GITHUB_REPO)}/contents/${encodeGitHubPath(
                 filePath
             )}?ref=${encodeURIComponent(GITHUB_BASE_BRANCH)}`
         );
-        const decoded = decodeGitHubContent(response.content);
 
         return {
             exists: true,
             sha: response.sha,
-            document: JSON.parse(decoded)
+            content: decodeGitHubContent(response.content)
         };
     } catch (error) {
         if (error.statusCode === 404) {
             return {
                 exists: false,
                 sha: "",
-                document: null
+                content: ""
             };
         }
 
@@ -279,12 +294,16 @@ async function readExistingSubmission(filePath) {
     }
 }
 
-async function createWorkingBranch(authorSlug, themeSlug) {
-    const branchInfo = await githubJson(
+async function readBranchInfo(branchName) {
+    return githubJson(
         `/repos/${encodeURIComponent(GITHUB_OWNER)}/${encodeURIComponent(GITHUB_REPO)}/branches/${encodeURIComponent(
-            GITHUB_BASE_BRANCH
+            branchName
         )}`
     );
+}
+
+async function createWorkingBranch(authorSlug, themeSlug) {
+    const branchInfo = await readBranchInfo(GITHUB_BASE_BRANCH);
     const branchName = `theme-submit/${authorSlug}/${themeSlug}-${Date.now()}`;
 
     await githubJson(`/repos/${encodeURIComponent(GITHUB_OWNER)}/${encodeURIComponent(GITHUB_REPO)}/git/refs`, {
@@ -298,10 +317,10 @@ async function createWorkingBranch(authorSlug, themeSlug) {
     return branchName;
 }
 
-async function writeSubmissionFile(options) {
+async function writeRepositoryFile(options) {
     const body = {
         message: options.commitMessage,
-        content: Buffer.from(`${JSON.stringify(options.document, null, 2)}\n`, "utf8").toString("base64"),
+        content: Buffer.from(options.content, "utf8").toString("base64"),
         branch: options.branchName
     };
 
@@ -318,6 +337,149 @@ async function writeSubmissionFile(options) {
             body
         }
     );
+}
+
+async function getBranchTreeSha(branchName) {
+    const branchInfo = await readBranchInfo(branchName);
+    const nestedTreeSha = textValue(branchInfo && branchInfo.commit && branchInfo.commit.commit && branchInfo.commit.commit.tree && branchInfo.commit.commit.tree.sha);
+
+    if (nestedTreeSha) {
+        return nestedTreeSha;
+    }
+
+    const commitSha = textValue(branchInfo && branchInfo.commit && branchInfo.commit.sha);
+
+    if (!commitSha) {
+        throw new Error(`Couldn't resolve tree sha for branch ${branchName}`);
+    }
+
+    const commitInfo = await githubJson(
+        `/repos/${encodeURIComponent(GITHUB_OWNER)}/${encodeURIComponent(GITHUB_REPO)}/git/commits/${encodeURIComponent(commitSha)}`
+    );
+    const treeSha = textValue(commitInfo && commitInfo.tree && commitInfo.tree.sha);
+
+    if (!treeSha) {
+        throw new Error(`Couldn't resolve tree sha for branch ${branchName}`);
+    }
+
+    return treeSha;
+}
+
+async function listSubmissionFiles(branchName) {
+    const treeSha = await getBranchTreeSha(branchName);
+    const treeInfo = await githubJson(
+        `/repos/${encodeURIComponent(GITHUB_OWNER)}/${encodeURIComponent(GITHUB_REPO)}/git/trees/${encodeURIComponent(treeSha)}?recursive=1`
+    );
+    const treeEntries = Array.isArray(treeInfo && treeInfo.tree) ? treeInfo.tree : [];
+
+    return treeEntries
+        .filter((entry) => {
+            return (
+                entry &&
+                entry.type === "blob" &&
+                textValue(entry.path).startsWith(`${REPO_SUBMISSIONS_ROOT}/`) &&
+                textValue(entry.path).endsWith(".json")
+            );
+        })
+        .map((entry) => textValue(entry.path))
+        .sort();
+}
+
+function buildThemeRegistryEntry(filePath, document) {
+    const themeName = textValue(document && document.themeName);
+    const authorName = textValue(document && document.authorName);
+    const authorSlug = textValue(document && document.authorSlug) || slugify(authorName);
+    const themeSlug = textValue(document && document.themeSlug) || slugify(themeName);
+    const creditText = textValue(document && document.creditText) || (authorName ? `by: ${authorName}` : "");
+    const tokens = sanitizeTokens(document && document.tokens);
+
+    if (!themeName || !authorName || !authorSlug || !themeSlug || !Object.keys(tokens).length) {
+        return null;
+    }
+
+    return {
+        id: buildCustomThemeId(authorSlug, themeSlug),
+        sortKey: `${themeName.toLowerCase()}\u0000${authorName.toLowerCase()}\u0000${authorSlug}\u0000${themeSlug}`,
+        meta: {
+            group: "author",
+            label: themeName,
+            themeName,
+            authorName,
+            authorSlug,
+            themeSlug,
+            credit: creditText,
+            sourceTheme: textValue(document && document.sourceTheme),
+            submissionPath: filePath,
+            version: Number(document && document.version) || 1,
+            createdAt: textValue(document && document.createdAt),
+            updatedAt: textValue(document && document.updatedAt),
+            tokens
+        }
+    };
+}
+
+function buildThemeRegistryDocument(submissionEntries) {
+    const themeCatalog = {
+        light: {
+            group: "core",
+            label: "Light",
+            credit: ""
+        },
+        dark: {
+            group: "core",
+            label: "Dark",
+            credit: ""
+        }
+    };
+
+    submissionEntries
+        .map((entry) => buildThemeRegistryEntry(entry.filePath, entry.document))
+        .filter(Boolean)
+        .sort((left, right) => left.sortKey.localeCompare(right.sortKey))
+        .forEach((entry) => {
+            themeCatalog[entry.id] = entry.meta;
+        });
+
+    return {
+        generatedFrom: REPO_SUBMISSIONS_ROOT,
+        defaultTheme: "light",
+        themeCatalog
+    };
+}
+
+function buildThemeRegistryScript(submissionEntries) {
+    const registry = buildThemeRegistryDocument(submissionEntries);
+    const serializedRegistry = JSON.stringify(registry, null, 4).replace(/\n/g, "\n    ");
+
+    return `(function () {\n    window.WayokiThemeRegistry = ${serializedRegistry};\n})();\n`;
+}
+
+async function collectRegistrySubmissions(currentFilePath, currentDocument) {
+    const filePaths = await listSubmissionFiles(GITHUB_BASE_BRANCH);
+    const existingEntries = await Promise.all(
+        filePaths.map(async (filePath) => {
+            const submission = await readExistingSubmission(filePath);
+
+            return submission.exists
+                ? {
+                      filePath,
+                      document: submission.document
+                  }
+                : null;
+        })
+    );
+    const entryMap = new Map();
+
+    existingEntries.filter(Boolean).forEach((entry) => {
+        entryMap.set(entry.filePath, entry.document);
+    });
+
+    entryMap.set(currentFilePath, currentDocument);
+
+    return Array.from(entryMap.entries()).map(([filePath, document]) => ({
+        filePath,
+        document
+    }));
 }
 
 async function createPullRequest(options) {
@@ -410,13 +572,22 @@ exports.handler = async function handler(event) {
             action === "create"
                 ? `Add theme submission: ${themeSlug} by ${authorSlug}`
                 : `Update theme submission: ${themeSlug} by ${authorSlug}`;
+        const existingRegistry = await readExistingFile(GENERATED_THEME_REGISTRY_PATH);
+        const registryScript = buildThemeRegistryScript(await collectRegistrySubmissions(filePath, document));
 
-        await writeSubmissionFile({
+        await writeRepositoryFile({
             branchName,
             commitMessage,
-            document,
+            content: `${JSON.stringify(document, null, 2)}\n`,
             filePath,
             sha: existingSubmission.sha
+        });
+        await writeRepositoryFile({
+            branchName,
+            commitMessage,
+            content: registryScript,
+            filePath: GENERATED_THEME_REGISTRY_PATH,
+            sha: existingRegistry.sha
         });
 
         const pullRequest = await createPullRequest({

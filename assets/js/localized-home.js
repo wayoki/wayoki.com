@@ -31,7 +31,18 @@ function normalizeTheme(theme) {
         return themeRuntime.normalizeTheme(theme);
     }
 
-    return theme === "dark" || theme === "author-1" || theme === "author-2" ? theme : "light";
+    const externalRegistry =
+        window.WayokiThemeRegistry &&
+        window.WayokiThemeRegistry.themeCatalog &&
+        typeof window.WayokiThemeRegistry.themeCatalog === "object"
+            ? window.WayokiThemeRegistry.themeCatalog
+            : null;
+
+    if (externalRegistry && Object.prototype.hasOwnProperty.call(externalRegistry, theme)) {
+        return theme;
+    }
+
+    return theme === "dark" ? theme : "light";
 }
 
 function readStoredTheme() {
