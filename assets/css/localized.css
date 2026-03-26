@@ -1044,8 +1044,7 @@ body.localized-page a {
     color: currentColor;
 }
 
-.theme-button-option-custom,
-.theme-button-option-create {
+.theme-button-option-custom {
     min-height: 32px;
     padding-left: 12px;
 }

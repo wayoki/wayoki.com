@@ -72,6 +72,33 @@ function slugify(value) {
         .replace(/^-+|-+$/g, "");
 }
 
+function parseIsoToTimestamp(value) {
+    const timestamp = Date.parse(textValue(value));
+
+    return Number.isFinite(timestamp) ? timestamp : 0;
+}
+
+function parseLegacyPathTimestamp(filePath) {
+    const match = textValue(filePath).match(/(?:^|\/)(\d{8})-(\d{6})-[^/]+\.json$/u);
+
+    if (!match) {
+        return 0;
+    }
+
+    const year = Number(match[1].slice(0, 4));
+    const month = Number(match[1].slice(4, 6));
+    const day = Number(match[1].slice(6, 8));
+    const hour = Number(match[2].slice(0, 2));
+    const minute = Number(match[2].slice(2, 4));
+    const second = Number(match[2].slice(4, 6));
+
+    return Date.UTC(year, month - 1, day, hour, minute, second);
+}
+
+function getCanonicalSubmissionPath(authorSlug, themeSlug) {
+    return `${REPO_SUBMISSIONS_ROOT}/${authorSlug}/${themeSlug}.json`;
+}
+
 function sanitizeTokens(tokens) {
     if (!tokens || typeof tokens !== "object" || Array.isArray(tokens)) {
         return {};
@@ -119,9 +146,9 @@ function buildStoredThemeDocument(payload, existingDocument, authorSlug, themeSl
         themeName: textValue(payload.themeName),
         authorName: textValue(payload.authorName),
         creditText: textValue(payload.creditText),
-        sourceTheme: textValue(payload.sourceTheme),
+        sourceTheme: textValue(payload.sourceTheme) || textValue(existingDocument && existingDocument.sourceTheme),
         submittedAt: textValue(payload.submittedAt) || nowIso,
-        createdAt: textValue(existingDocument && existingDocument.createdAt) || nowIso,
+        createdAt: textValue(existingDocument && existingDocument.createdAt) || textValue(existingDocument && existingDocument.submittedAt) || nowIso,
         updatedAt: nowIso,
         version: hasExistingDocument ? (Number.isFinite(previousVersion) && previousVersion > 0 ? previousVersion + 1 : 2) : 1,
         authorSlug,
@@ -140,6 +167,81 @@ function buildPullRequestBody(options) {
         `Registry: \`${GENERATED_THEME_REGISTRY_PATH}\``,
         `Version: ${options.version}`
     ].join("\n");
+}
+
+function normalizeSubmissionEntry(filePath, document) {
+    const themeName = textValue(document && document.themeName);
+    const authorName = textValue(document && document.authorName);
+    const authorSlug = textValue(document && document.authorSlug) || slugify(authorName);
+    const themeSlug = textValue(document && document.themeSlug) || slugify(themeName);
+    const tokens = sanitizeTokens(document && document.tokens);
+
+    if (!themeName || !authorName || !authorSlug || !themeSlug || !Object.keys(tokens).length) {
+        return null;
+    }
+
+    return {
+        filePath,
+        canonicalKey: `${authorSlug}/${themeSlug}`,
+        canonicalFilePath: getCanonicalSubmissionPath(authorSlug, themeSlug),
+        themeName,
+        authorName,
+        authorSlug,
+        themeSlug,
+        creditText: textValue(document && document.creditText) || `by: ${authorName}`,
+        sourceTheme: textValue(document && document.sourceTheme),
+        createdAt: textValue(document && document.createdAt) || textValue(document && document.submittedAt),
+        updatedAt: textValue(document && document.updatedAt) || textValue(document && document.submittedAt),
+        submittedAt: textValue(document && document.submittedAt),
+        version: Number(document && document.version) || 1,
+        tokens,
+        document,
+        sortTimestamp: Math.max(
+            parseIsoToTimestamp(document && document.updatedAt),
+            parseIsoToTimestamp(document && document.submittedAt),
+            parseIsoToTimestamp(document && document.createdAt),
+            parseLegacyPathTimestamp(filePath)
+        )
+    };
+}
+
+function compareNormalizedSubmissionEntries(left, right) {
+    if (left.sortTimestamp !== right.sortTimestamp) {
+        return left.sortTimestamp - right.sortTimestamp;
+    }
+
+    if (left.version !== right.version) {
+        return left.version - right.version;
+    }
+
+    const leftIsCanonical = left.filePath === left.canonicalFilePath;
+    const rightIsCanonical = right.filePath === right.canonicalFilePath;
+
+    if (leftIsCanonical !== rightIsCanonical) {
+        return leftIsCanonical ? 1 : -1;
+    }
+
+    return left.filePath.localeCompare(right.filePath);
+}
+
+function selectPreferredSubmissionEntries(entries) {
+    const winners = new Map();
+
+    entries.forEach((entry) => {
+        const normalized = normalizeSubmissionEntry(entry.filePath, entry.document);
+
+        if (!normalized) {
+            return;
+        }
+
+        const currentWinner = winners.get(normalized.canonicalKey);
+
+        if (!currentWinner || compareNormalizedSubmissionEntries(normalized, currentWinner) > 0) {
+            winners.set(normalized.canonicalKey, normalized);
+        }
+    });
+
+    return Array.from(winners.values());
 }
 
 function decodeGitHubContent(content) {
@@ -339,6 +441,22 @@ async function writeRepositoryFile(options) {
     );
 }
 
+async function deleteRepositoryFile(options) {
+    return githubJson(
+        `/repos/${encodeURIComponent(GITHUB_OWNER)}/${encodeURIComponent(GITHUB_REPO)}/contents/${encodeGitHubPath(
+            options.filePath
+        )}`,
+        {
+            method: "DELETE",
+            body: {
+                message: options.commitMessage,
+                branch: options.branchName,
+                sha: options.sha
+            }
+        }
+    );
+}
+
 async function getBranchTreeSha(branchName) {
     const branchInfo = await readBranchInfo(branchName);
     const nestedTreeSha = textValue(branchInfo && branchInfo.commit && branchInfo.commit.commit && branchInfo.commit.commit.tree && branchInfo.commit.commit.tree.sha);
@@ -386,34 +504,30 @@ async function listSubmissionFiles(branchName) {
 }
 
 function buildThemeRegistryEntry(filePath, document) {
-    const themeName = textValue(document && document.themeName);
-    const authorName = textValue(document && document.authorName);
-    const authorSlug = textValue(document && document.authorSlug) || slugify(authorName);
-    const themeSlug = textValue(document && document.themeSlug) || slugify(themeName);
-    const creditText = textValue(document && document.creditText) || (authorName ? `by: ${authorName}` : "");
-    const tokens = sanitizeTokens(document && document.tokens);
+    const normalized = normalizeSubmissionEntry(filePath, document);
 
-    if (!themeName || !authorName || !authorSlug || !themeSlug || !Object.keys(tokens).length) {
+    if (!normalized) {
         return null;
     }
 
     return {
-        id: buildCustomThemeId(authorSlug, themeSlug),
-        sortKey: `${themeName.toLowerCase()}\u0000${authorName.toLowerCase()}\u0000${authorSlug}\u0000${themeSlug}`,
+        id: buildCustomThemeId(normalized.authorSlug, normalized.themeSlug),
+        sortKey: `${normalized.themeName.toLowerCase()}\u0000${normalized.authorName.toLowerCase()}\u0000${normalized.authorSlug}\u0000${normalized.themeSlug}`,
         meta: {
             group: "author",
-            label: themeName,
-            themeName,
-            authorName,
-            authorSlug,
-            themeSlug,
-            credit: creditText,
-            sourceTheme: textValue(document && document.sourceTheme),
-            submissionPath: filePath,
-            version: Number(document && document.version) || 1,
-            createdAt: textValue(document && document.createdAt),
-            updatedAt: textValue(document && document.updatedAt),
-            tokens
+            label: normalized.themeName,
+            themeName: normalized.themeName,
+            authorName: normalized.authorName,
+            authorSlug: normalized.authorSlug,
+            themeSlug: normalized.themeSlug,
+            credit: normalized.creditText,
+            sourceTheme: normalized.sourceTheme,
+            submissionPath: normalized.filePath,
+            canonicalSubmissionPath: normalized.canonicalFilePath,
+            version: normalized.version,
+            createdAt: normalized.createdAt,
+            updatedAt: normalized.updatedAt,
+            tokens: normalized.tokens
         }
     };
 }
@@ -432,7 +546,11 @@ function buildThemeRegistryDocument(submissionEntries) {
         }
     };
 
-    submissionEntries
+    selectPreferredSubmissionEntries(submissionEntries)
+        .map((entry) => ({
+            filePath: entry.filePath,
+            document: entry.document
+        }))
         .map((entry) => buildThemeRegistryEntry(entry.filePath, entry.document))
         .filter(Boolean)
         .sort((left, right) => left.sortKey.localeCompare(right.sortKey))
@@ -454,10 +572,15 @@ function buildThemeRegistryScript(submissionEntries) {
     return `(function () {\n    window.WayokiThemeRegistry = ${serializedRegistry};\n})();\n`;
 }
 
-async function collectRegistrySubmissions(currentFilePath, currentDocument) {
+async function collectRegistrySubmissions(currentFilePath, currentDocument, options = {}) {
     const filePaths = await listSubmissionFiles(GITHUB_BASE_BRANCH);
+    const removedFilePaths = new Set(Array.isArray(options.removedFilePaths) ? options.removedFilePaths : []);
     const existingEntries = await Promise.all(
         filePaths.map(async (filePath) => {
+            if (removedFilePaths.has(filePath)) {
+                return null;
+            }
+
             const submission = await readExistingSubmission(filePath);
 
             return submission.exists
@@ -480,6 +603,46 @@ async function collectRegistrySubmissions(currentFilePath, currentDocument) {
         filePath,
         document
     }));
+}
+
+async function findLegacySubmission(authorSlug, themeSlug, canonicalFilePath) {
+    const canonicalKey = `${authorSlug}/${themeSlug}`;
+    const filePaths = await listSubmissionFiles(GITHUB_BASE_BRANCH);
+    const candidates = [];
+
+    for (const filePath of filePaths) {
+        if (filePath === canonicalFilePath) {
+            continue;
+        }
+
+        const submission = await readExistingSubmission(filePath);
+
+        if (!submission.exists) {
+            continue;
+        }
+
+        const normalized = normalizeSubmissionEntry(filePath, submission.document);
+
+        if (!normalized || normalized.canonicalKey !== canonicalKey) {
+            continue;
+        }
+
+        candidates.push({
+            ...submission,
+            filePath,
+            normalized
+        });
+    }
+
+    return candidates.reduce((bestCandidate, currentCandidate) => {
+        if (!bestCandidate) {
+            return currentCandidate;
+        }
+
+        return compareNormalizedSubmissionEntries(currentCandidate.normalized, bestCandidate.normalized) > 0
+            ? currentCandidate
+            : bestCandidate;
+    }, null);
 }
 
 async function createPullRequest(options) {
@@ -553,27 +716,32 @@ exports.handler = async function handler(event) {
             });
         }
 
-        const filePath = `${REPO_SUBMISSIONS_ROOT}/${authorSlug}/${themeSlug}.json`;
+        const filePath = getCanonicalSubmissionPath(authorSlug, themeSlug);
         const existingSubmission = await readExistingSubmission(filePath);
+        const legacySubmission = existingSubmission.exists ? null : await findLegacySubmission(authorSlug, themeSlug, filePath);
         const nowIso = new Date().toISOString();
         const document = buildStoredThemeDocument(
             {
                 ...payload,
                 tokens: sanitizedTokens
             },
-            existingSubmission.document,
+            existingSubmission.document || (legacySubmission && legacySubmission.document),
             authorSlug,
             themeSlug,
             nowIso
         );
-        const action = existingSubmission.exists ? "update" : "create";
+        const action = existingSubmission.exists || legacySubmission ? "update" : "create";
         const branchName = await createWorkingBranch(authorSlug, themeSlug);
         const commitMessage =
             action === "create"
                 ? `Add theme submission: ${themeSlug} by ${authorSlug}`
                 : `Update theme submission: ${themeSlug} by ${authorSlug}`;
         const existingRegistry = await readExistingFile(GENERATED_THEME_REGISTRY_PATH);
-        const registryScript = buildThemeRegistryScript(await collectRegistrySubmissions(filePath, document));
+        const registryScript = buildThemeRegistryScript(
+            await collectRegistrySubmissions(filePath, document, {
+                removedFilePaths: legacySubmission ? [legacySubmission.filePath] : []
+            })
+        );
 
         await writeRepositoryFile({
             branchName,
@@ -582,6 +750,16 @@ exports.handler = async function handler(event) {
             filePath,
             sha: existingSubmission.sha
         });
+
+        if (legacySubmission && legacySubmission.sha) {
+            await deleteRepositoryFile({
+                branchName,
+                commitMessage,
+                filePath: legacySubmission.filePath,
+                sha: legacySubmission.sha
+            });
+        }
+
         await writeRepositoryFile({
             branchName,
             commitMessage,

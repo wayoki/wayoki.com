@@ -14,3 +14,5 @@ Rules:
 - `updatedAt` and `version` change on every accepted update
 - merged JSON files in this folder are the source of truth for public custom themes
 - `collab/site-ui/theme-registry.js` is generated from these files
+- legacy timestamp-named files should be migrated into the stable path model
+- if legacy duplicates exist for the same author/theme, the newest record wins and older files are treated as obsolete
