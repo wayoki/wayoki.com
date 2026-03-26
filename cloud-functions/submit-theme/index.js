@@ -297,6 +297,10 @@ function selectPreferredSubmissionEntries(entries) {
     return Array.from(winners.values());
 }
 
+function selectPublishedSubmissionEntries(entries) {
+    return selectPreferredSubmissionEntries(entries).filter((entry) => entry.filePath === entry.canonicalFilePath);
+}
+
 function decodeGitHubContent(content) {
     return Buffer.from(String(content || "").replace(/\n/g, ""), "base64").toString("utf8");
 }
@@ -599,7 +603,7 @@ function buildThemeRegistryDocument(submissionEntries) {
         }
     };
 
-    selectPreferredSubmissionEntries(submissionEntries)
+    selectPublishedSubmissionEntries(submissionEntries)
         .map((entry) => ({
             filePath: entry.filePath,
             document: entry.document
@@ -943,5 +947,6 @@ exports.__private = {
     buildSubmissionIdentity,
     getCanonicalSubmissionPath,
     buildCustomThemeId,
-    buildWorkingBranchName
+    buildWorkingBranchName,
+    selectPublishedSubmissionEntries
 };

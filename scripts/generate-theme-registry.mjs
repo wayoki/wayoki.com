@@ -173,6 +173,20 @@ function compareNormalizedSubmissionEntries(left, right) {
     return left.filePath.localeCompare(right.filePath);
 }
 
+function selectPublishedSubmissionEntries(entries) {
+    const winners = new Map();
+
+    for (const normalized of entries) {
+        const currentWinner = winners.get(normalized.canonicalKey);
+
+        if (!currentWinner || compareNormalizedSubmissionEntries(normalized, currentWinner) > 0) {
+            winners.set(normalized.canonicalKey, normalized);
+        }
+    }
+
+    return Array.from(winners.values()).filter((entry) => entry.filePath === entry.canonicalFilePath);
+}
+
 function buildThemeRegistryEntry(normalized) {
     return {
         id: buildCustomThemeId(normalized.authorSlug, normalized.themeSlug),
@@ -224,7 +238,7 @@ function toRepoRelativePath(absolutePath) {
 
 async function collectPublishedThemes() {
     const absoluteFiles = await readJsonFiles(submissionsRoot);
-    const winners = new Map();
+    const normalizedEntries = [];
 
     for (const absoluteFile of absoluteFiles) {
         const filePath = toRepoRelativePath(absoluteFile);
@@ -236,14 +250,10 @@ async function collectPublishedThemes() {
             continue;
         }
 
-        const currentWinner = winners.get(normalized.canonicalKey);
-
-        if (!currentWinner || compareNormalizedSubmissionEntries(normalized, currentWinner) > 0) {
-            winners.set(normalized.canonicalKey, normalized);
-        }
+        normalizedEntries.push(normalized);
     }
 
-    return Array.from(winners.values());
+    return selectPublishedSubmissionEntries(normalizedEntries);
 }
 
 function buildRegistryScript(normalizedEntries) {

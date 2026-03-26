@@ -823,28 +823,72 @@ body.localized-page a {
 
 .theme-editor-toast {
     position: fixed;
-    top: 88px;
-    right: 20px;
+    top: 50%;
+    left: 50%;
     z-index: 38;
-    max-width: min(360px, calc(100vw - 32px));
+    width: min(360px, calc(100vw - 32px));
     margin: 0;
-    padding: 10px 14px;
+    padding: 24px 22px 20px;
     border: 1px solid var(--theme-editor-panel-border);
-    border-radius: 999px;
-    background: color-mix(in srgb, var(--theme-editor-panel-bg) 90%, transparent);
+    border-radius: 28px;
+    background: color-mix(in srgb, var(--theme-editor-panel-bg) 94%, transparent);
     box-shadow: var(--theme-editor-panel-shadow);
     color: var(--editor-text);
-    font-size: 12px;
-    line-height: 1.4;
+    display: grid;
+    justify-items: center;
+    gap: 12px;
+    text-align: center;
+    font-size: 13px;
+    line-height: 1.5;
     backdrop-filter: blur(10px);
+    opacity: 0;
+    pointer-events: none;
+    transform: translate(-50%, -50%) scale(0.96);
+    transition: opacity 180ms ease, transform 180ms ease;
 }
 
 .theme-editor-toast[hidden] {
     display: none !important;
 }
 
+.theme-editor-toast[data-visible="true"] {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+}
+
 .theme-editor-toast[data-status="success"] {
     border-color: color-mix(in srgb, var(--color-success) 28%, var(--theme-editor-panel-border));
+}
+
+.theme-editor-toast-icon {
+    width: 52px;
+    height: 52px;
+    display: grid;
+    place-items: center;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--color-success) 14%, var(--theme-editor-panel-bg));
+    color: var(--color-success);
+}
+
+.theme-editor-toast-icon-svg {
+    width: 28px;
+    height: 28px;
+    display: block;
+    stroke: currentColor;
+    stroke-width: 1.9;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    fill: none;
+}
+
+.theme-editor-toast-icon-svg circle {
+    opacity: 0.18;
+    fill: currentColor;
+    stroke: none;
+}
+
+.theme-editor-toast-message {
+    margin: 0;
 }
 
 .theme-editor-submit-dialog {

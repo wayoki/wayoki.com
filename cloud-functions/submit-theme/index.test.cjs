@@ -22,6 +22,22 @@ test("same values still work", () => {
     assert.equal(identity.filePath, "collab/site-ui/submissions/test/test.json");
 });
 
+test("different theme for same author uses nested author/theme path", () => {
+    const identity = helpers.buildSubmissionIdentity("test1", "test");
+
+    assert.equal(identity.catalogKey, "test/test1");
+    assert.equal(identity.filePath, "collab/site-ui/submissions/test/test1.json");
+});
+
+test("avtor/temi resolves to the expected nested canonical path", () => {
+    const identity = helpers.buildSubmissionIdentity("temi", "avtor");
+
+    assert.equal(identity.authorSlug, "avtor");
+    assert.equal(identity.themeSlug, "temi");
+    assert.equal(identity.catalogKey, "avtor/temi");
+    assert.equal(identity.filePath, "collab/site-ui/submissions/avtor/temi.json");
+});
+
 test("different themes for one author generate different canonical paths", () => {
     const one = helpers.buildSubmissionIdentity("kaidan", "wayoki");
     const two = helpers.buildSubmissionIdentity("noir-soft", "wayoki");
@@ -57,4 +73,26 @@ test("stable custom theme id uses author/theme format", () => {
 
 test("working branch name is flat and no longer depends on slash nesting", () => {
     assert.equal(helpers.buildWorkingBranchName("name", "theme", 1234567890), "theme-submit-name--theme-1234567890");
+});
+
+test("published registry prefers canonical nested submission paths over legacy flat files", () => {
+    const published = helpers.selectPublishedSubmissionEntries([
+        {
+            filePath: "collab/site-ui/submissions/20260326-082302-avtor-temi.json",
+            canonicalFilePath: "collab/site-ui/submissions/avtor/temi.json",
+            canonicalKey: "avtor/temi",
+            sortTimestamp: 1,
+            version: 1
+        },
+        {
+            filePath: "collab/site-ui/submissions/avtor/temi.json",
+            canonicalFilePath: "collab/site-ui/submissions/avtor/temi.json",
+            canonicalKey: "avtor/temi",
+            sortTimestamp: 0,
+            version: 1
+        }
+    ]);
+
+    assert.equal(published.length, 1);
+    assert.equal(published[0].filePath, "collab/site-ui/submissions/avtor/temi.json");
 });

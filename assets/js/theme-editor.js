@@ -746,9 +746,21 @@
             state.toastTimeout = 0;
         }
 
-        state.toast.hidden = true;
-        state.toast.textContent = "";
+        state.toast.dataset.visible = "false";
         state.toast.dataset.status = "";
+
+        if (state.toastHideTimeout) {
+            window.clearTimeout(state.toastHideTimeout);
+            state.toastHideTimeout = 0;
+        }
+
+        state.toastHideTimeout = window.setTimeout(() => {
+            state.toast.hidden = true;
+        }, 180);
+
+        if (state.toastMessage) {
+            state.toastMessage.textContent = "";
+        }
     }
 
     function showToast(state, kind, message, options = {}) {
@@ -758,14 +770,39 @@
 
         clearToast(state);
         state.toast.hidden = false;
-        state.toast.textContent = message;
         state.toast.dataset.status = kind;
+        if (state.toastMessage) {
+            state.toastMessage.textContent = message;
+        }
+        window.requestAnimationFrame(() => {
+            state.toast.dataset.visible = "true";
+        });
 
         if (options.duration && Number(options.duration) > 0) {
             state.toastTimeout = window.setTimeout(() => {
                 clearToast(state);
             }, Number(options.duration));
         }
+    }
+
+    function createSuccessToastIcon() {
+        const icon = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+        const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+        const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+
+        icon.setAttribute("viewBox", "0 0 24 24");
+        icon.setAttribute("aria-hidden", "true");
+        icon.setAttribute("focusable", "false");
+        icon.classList.add("theme-editor-toast-icon-svg");
+
+        circle.setAttribute("cx", "12");
+        circle.setAttribute("cy", "12");
+        circle.setAttribute("r", "9");
+
+        path.setAttribute("d", "M7.6 12.3 10.5 15.2 16.5 9.2");
+
+        icon.append(circle, path);
+        return icon;
     }
 
     function hasInvalidTokenFields(state) {
@@ -1587,7 +1624,9 @@
         const resetButton = createElement("button", "theme-button theme-editor-button theme-editor-button-secondary", state.labels.reset);
         const submitButton = createElement("button", "theme-button theme-editor-button theme-editor-button-primary", state.labels.submit);
         const status = createElement("p", "theme-editor-status");
-        const toast = createElement("p", "theme-editor-toast");
+        const toast = createElement("div", "theme-editor-toast");
+        const toastIcon = createElement("span", "theme-editor-toast-icon");
+        const toastMessage = createElement("p", "theme-editor-toast-message");
 
         title.id = "theme-editor-title";
         exitLink.href = getCustomizationExitHref(state.locale);
@@ -1605,6 +1644,9 @@
         statusRow.hidden = true;
         toast.hidden = true;
         toast.setAttribute("aria-live", "polite");
+        toast.dataset.visible = "false";
+        toastIcon.append(createSuccessToastIcon());
+        toast.append(toastIcon, toastMessage);
 
         actions.append(exitLink, resetButton, submitButton);
         controls.append(actions);
@@ -1658,6 +1700,7 @@
         state.exitLink = exitLink;
         state.resizeHandle = resizeHandle;
         state.toast = toast;
+        state.toastMessage = toastMessage;
 
         document.body.prepend(bar);
         document.body.append(toast);
