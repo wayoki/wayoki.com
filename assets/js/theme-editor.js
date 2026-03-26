@@ -276,10 +276,42 @@
     }
 
     function normalizeSubmitErrorMessage(state, error) {
+        const errorCode = textValue(error && error.result && error.result.data && error.result.data.code);
         const resultMessage = textValue(error && error.result && error.result.message);
         const errorMessage = textValue(error && error.message);
         const rawMessage = resultMessage || errorMessage;
         const loweredMessage = rawMessage.toLowerCase();
+        const localizedCodeMessages = state.locale === "ru"
+            ? {
+                  invalid_theme_name: "Укажите имя темы.",
+                  invalid_author_name: "Укажите имя автора.",
+                  invalid_theme_slug: "Имя темы должно содержать хотя бы одну букву или цифру после нормализации.",
+                  invalid_author_slug: "Имя автора должно содержать хотя бы одну букву или цифру после нормализации.",
+                  invalid_tokens: "Не удалось собрать редактируемые токены темы.",
+                  invalid_endpoint: "Некорректный submit endpoint для отправки темы.",
+                  branch_create_failed: "Не удалось создать рабочую ветку для отправки темы.",
+                  submission_write_failed: "Не удалось сохранить submission-файл темы.",
+                  legacy_cleanup_failed: "Не удалось убрать устаревший submission-файл.",
+                  registry_read_failed: "Не удалось прочитать registry кастомных тем.",
+                  registry_build_failed: "Не удалось пересобрать registry кастомных тем.",
+                  registry_write_failed: "Не удалось обновить registry кастомных тем.",
+                  pull_request_failed: "Не удалось создать pull request для темы."
+              }
+            : {
+                  invalid_theme_name: "Please provide a theme name.",
+                  invalid_author_name: "Please provide an author name.",
+                  invalid_theme_slug: "Theme name must contain at least one letter or digit after normalization.",
+                  invalid_author_slug: "Author name must contain at least one letter or digit after normalization.",
+                  invalid_tokens: "Couldn't collect editable tokens.",
+                  invalid_endpoint: "The theme submit endpoint is invalid.",
+                  branch_create_failed: "Failed to create a working branch for the theme submission.",
+                  submission_write_failed: "Failed to save the theme submission file.",
+                  legacy_cleanup_failed: "Failed to remove an obsolete legacy submission file.",
+                  registry_read_failed: "Failed to read the custom theme registry.",
+                  registry_build_failed: "Failed to rebuild the custom theme registry.",
+                  registry_write_failed: "Failed to update the custom theme registry.",
+                  pull_request_failed: "Failed to create a pull request for the theme."
+              };
 
         if (isLocalDevelopmentOrigin() && (!rawMessage || loweredMessage.includes("failed to fetch") || loweredMessage.includes("networkerror"))) {
             return state.labels.submitUnavailableLocal;
@@ -291,6 +323,10 @@
 
         if (error && error.name === "AbortError") {
             return state.labels.submitFailed;
+        }
+
+        if (errorCode && localizedCodeMessages[errorCode]) {
+            return localizedCodeMessages[errorCode];
         }
 
         return rawMessage || state.labels.submitFailed;
@@ -1727,7 +1763,9 @@
         state.submitModalButton.addEventListener("click", () => {
             const payload = buildPayload(state);
             const validationError = validateEditorPayload(state, payload);
-            const endpoint = submitService.getConfiguredEndpoint(state.root);
+            const endpoint = submitService.resolveEndpointUrl
+                ? submitService.resolveEndpointUrl(submitService.getConfiguredEndpoint(state.root))
+                : submitService.getConfiguredEndpoint(state.root);
 
             state.submitModalThemeTouched = true;
             state.submitModalAuthorTouched = true;
@@ -1744,7 +1782,13 @@
             }
 
             if (!textValue(endpoint)) {
-                setSubmitModalStatus(state, "error", state.labels.submitFailed);
+                setSubmitModalStatus(state, "error", normalizeSubmitErrorMessage(state, {
+                    result: {
+                        data: {
+                            code: "invalid_endpoint"
+                        }
+                    }
+                }));
                 return;
             }
 
@@ -1777,6 +1821,13 @@
                     state.submitting = false;
                     state.submitButton.textContent = state.labels.submit;
                     state.submitModalButton.textContent = state.labels.submitNow;
+                    if (window.console && typeof window.console.error === "function") {
+                        window.console.error("[wayoki-theme-submit] submit failed", {
+                            message: textValue(error && error.message),
+                            result: error && error.result ? error.result : null,
+                            payload
+                        });
+                    }
                     setSubmitModalStatus(state, "error", normalizeSubmitErrorMessage(state, error));
                     persistDraftRecord(state);
                     updateButtonState(state);

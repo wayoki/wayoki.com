@@ -99,6 +99,59 @@ function getCanonicalSubmissionPath(authorSlug, themeSlug) {
     return `${REPO_SUBMISSIONS_ROOT}/${authorSlug}/${themeSlug}.json`;
 }
 
+function buildWorkingBranchName(authorSlug, themeSlug, timestamp = Date.now()) {
+    const branchAuthorSlug = textValue(authorSlug);
+    const branchThemeSlug = textValue(themeSlug);
+    const branchTimestamp = Number.isFinite(Number(timestamp)) ? String(Math.trunc(Number(timestamp))) : String(Date.now());
+
+    return `theme-submit-${branchAuthorSlug}--${branchThemeSlug}-${branchTimestamp}`;
+}
+
+function buildSubmissionIdentity(themeName, authorName) {
+    const normalizedThemeName = textValue(themeName);
+    const normalizedAuthorName = textValue(authorName);
+    const themeSlug = slugify(normalizedThemeName);
+    const authorSlug = slugify(normalizedAuthorName);
+
+    return {
+        themeName: normalizedThemeName,
+        authorName: normalizedAuthorName,
+        themeSlug,
+        authorSlug,
+        catalogKey: authorSlug && themeSlug ? `${authorSlug}/${themeSlug}` : "",
+        filePath: authorSlug && themeSlug ? getCanonicalSubmissionPath(authorSlug, themeSlug) : ""
+    };
+}
+
+function createSubmissionError(message, options = {}) {
+    const error = new Error(textValue(message) || "Theme submission failed");
+
+    error.code = textValue(options.code) || "submission_failed";
+    error.stage = textValue(options.stage) || "";
+    error.statusCode = Number.isFinite(Number(options.statusCode)) ? Number(options.statusCode) : 500;
+    error.details = options.details && typeof options.details === "object" ? options.details : {};
+
+    return error;
+}
+
+function wrapStageError(stage, code, fallbackMessage, error, details = {}) {
+    const upstreamMessage = textValue(error && error.message);
+    const nextDetails = {
+        ...details
+    };
+
+    if (upstreamMessage) {
+        nextDetails.upstreamMessage = upstreamMessage;
+    }
+
+    return createSubmissionError(upstreamMessage || fallbackMessage, {
+        stage,
+        code,
+        statusCode: Number(error && error.statusCode) || 500,
+        details: nextDetails
+    });
+}
+
 function sanitizeTokens(tokens) {
     if (!tokens || typeof tokens !== "object" || Array.isArray(tokens)) {
         return {};
@@ -406,7 +459,7 @@ async function readBranchInfo(branchName) {
 
 async function createWorkingBranch(authorSlug, themeSlug) {
     const branchInfo = await readBranchInfo(GITHUB_BASE_BRANCH);
-    const branchName = `theme-submit/${authorSlug}/${themeSlug}-${Date.now()}`;
+    const branchName = buildWorkingBranchName(authorSlug, themeSlug);
 
     await githubJson(`/repos/${encodeURIComponent(GITHUB_OWNER)}/${encodeURIComponent(GITHUB_REPO)}/git/refs`, {
         method: "POST",
@@ -689,34 +742,60 @@ exports.handler = async function handler(event) {
             });
         }
 
-        const authorName = textValue(payload.authorName);
-        const themeName = textValue(payload.themeName);
-        const authorSlug = slugify(authorName);
-        const themeSlug = slugify(themeName);
+        const submissionIdentity = buildSubmissionIdentity(payload.themeName, payload.authorName);
+        const authorName = submissionIdentity.authorName;
+        const themeName = submissionIdentity.themeName;
+        const authorSlug = submissionIdentity.authorSlug;
+        const themeSlug = submissionIdentity.themeSlug;
         const sanitizedTokens = sanitizeTokens(payload.tokens);
 
-        if (!authorName || !authorSlug) {
+        if (!authorName) {
             return createJsonResponse(400, {
                 ok: false,
+                code: "invalid_author_name",
                 error: "authorName is required"
             });
         }
 
-        if (!themeName || !themeSlug) {
+        if (!themeName) {
             return createJsonResponse(400, {
                 ok: false,
+                code: "invalid_theme_name",
                 error: "themeName is required"
+            });
+        }
+
+        if (!authorSlug) {
+            return createJsonResponse(400, {
+                ok: false,
+                code: "invalid_author_slug",
+                error: "authorName must contain at least one letter or digit after normalization",
+                details: {
+                    authorName
+                }
+            });
+        }
+
+        if (!themeSlug) {
+            return createJsonResponse(400, {
+                ok: false,
+                code: "invalid_theme_slug",
+                error: "themeName must contain at least one letter or digit after normalization",
+                details: {
+                    themeName
+                }
             });
         }
 
         if (!Object.keys(sanitizedTokens).length) {
             return createJsonResponse(400, {
                 ok: false,
+                code: "invalid_tokens",
                 error: "tokens are required"
             });
         }
 
-        const filePath = getCanonicalSubmissionPath(authorSlug, themeSlug);
+        const filePath = submissionIdentity.filePath;
         const existingSubmission = await readExistingSubmission(filePath);
         const legacySubmission = existingSubmission.exists ? null : await findLegacySubmission(authorSlug, themeSlug, filePath);
         const nowIso = new Date().toISOString();
@@ -731,56 +810,109 @@ exports.handler = async function handler(event) {
             nowIso
         );
         const action = existingSubmission.exists || legacySubmission ? "update" : "create";
-        const branchName = await createWorkingBranch(authorSlug, themeSlug);
+        let branchName = "";
         const commitMessage =
             action === "create"
                 ? `Add theme submission: ${themeSlug} by ${authorSlug}`
                 : `Update theme submission: ${themeSlug} by ${authorSlug}`;
-        const existingRegistry = await readExistingFile(GENERATED_THEME_REGISTRY_PATH);
-        const registryScript = buildThemeRegistryScript(
-            await collectRegistrySubmissions(filePath, document, {
-                removedFilePaths: legacySubmission ? [legacySubmission.filePath] : []
-            })
-        );
+        let pullRequest;
 
-        await writeRepositoryFile({
-            branchName,
-            commitMessage,
-            content: `${JSON.stringify(document, null, 2)}\n`,
-            filePath,
-            sha: existingSubmission.sha
-        });
-
-        if (legacySubmission && legacySubmission.sha) {
-            await deleteRepositoryFile({
-                branchName,
-                commitMessage,
-                filePath: legacySubmission.filePath,
-                sha: legacySubmission.sha
+        try {
+            branchName = await createWorkingBranch(authorSlug, themeSlug);
+        } catch (error) {
+            throw wrapStageError("branch", "branch_create_failed", "Failed to create working branch", error, {
+                authorSlug,
+                themeSlug
             });
         }
 
-        await writeRepositoryFile({
-            branchName,
-            commitMessage,
-            content: registryScript,
-            filePath: GENERATED_THEME_REGISTRY_PATH,
-            sha: existingRegistry.sha
-        });
+        let existingRegistry;
 
-        const pullRequest = await createPullRequest({
-            branchName,
-            title: action === "create" ? `Add theme: ${themeSlug} by ${authorSlug}` : `Update theme: ${themeSlug} by ${authorSlug}`,
-            body: buildPullRequestBody({
-                action,
-                authorName,
-                authorSlug,
-                themeName,
-                themeSlug,
+        try {
+            existingRegistry = await readExistingFile(GENERATED_THEME_REGISTRY_PATH);
+        } catch (error) {
+            throw wrapStageError("registry-read", "registry_read_failed", "Failed to read theme registry", error, {
+                registryPath: GENERATED_THEME_REGISTRY_PATH
+            });
+        }
+
+        let registryScript = "";
+
+        try {
+            registryScript = buildThemeRegistryScript(
+                await collectRegistrySubmissions(filePath, document, {
+                    removedFilePaths: legacySubmission ? [legacySubmission.filePath] : []
+                })
+            );
+        } catch (error) {
+            throw wrapStageError("registry-build", "registry_build_failed", "Failed to build theme registry", error, {
+                registryPath: GENERATED_THEME_REGISTRY_PATH,
+                filePath
+            });
+        }
+
+        try {
+            await writeRepositoryFile({
+                branchName,
+                commitMessage,
+                content: `${JSON.stringify(document, null, 2)}\n`,
                 filePath,
-                version: document.version
-            })
-        });
+                sha: existingSubmission.sha
+            });
+        } catch (error) {
+            throw wrapStageError("submission-write", "submission_write_failed", "Failed to write submission file", error, {
+                filePath
+            });
+        }
+
+        if (legacySubmission && legacySubmission.sha) {
+            try {
+                await deleteRepositoryFile({
+                    branchName,
+                    commitMessage,
+                    filePath: legacySubmission.filePath,
+                    sha: legacySubmission.sha
+                });
+            } catch (error) {
+                throw wrapStageError("legacy-cleanup", "legacy_cleanup_failed", "Failed to remove legacy submission file", error, {
+                    filePath: legacySubmission.filePath
+                });
+            }
+        }
+
+        try {
+            await writeRepositoryFile({
+                branchName,
+                commitMessage,
+                content: registryScript,
+                filePath: GENERATED_THEME_REGISTRY_PATH,
+                sha: existingRegistry.sha
+            });
+        } catch (error) {
+            throw wrapStageError("registry-write", "registry_write_failed", "Failed to update theme registry", error, {
+                registryPath: GENERATED_THEME_REGISTRY_PATH
+            });
+        }
+
+        try {
+            pullRequest = await createPullRequest({
+                branchName,
+                title: action === "create" ? `Add theme: ${themeSlug} by ${authorSlug}` : `Update theme: ${themeSlug} by ${authorSlug}`,
+                body: buildPullRequestBody({
+                    action,
+                    authorName,
+                    authorSlug,
+                    themeName,
+                    themeSlug,
+                    filePath,
+                    version: document.version
+                })
+            });
+        } catch (error) {
+            throw wrapStageError("pull-request", "pull_request_failed", "Failed to create pull request", error, {
+                branchName
+            });
+        }
 
         return createJsonResponse(200, {
             ok: true,
@@ -791,13 +923,25 @@ exports.handler = async function handler(event) {
             version: document.version,
             createdAt: document.createdAt,
             updatedAt: document.updatedAt,
+            catalogKey: submissionIdentity.catalogKey,
             pullRequestUrl: pullRequest.html_url || "",
             pullRequestNumber: pullRequest.number || null
         });
     } catch (error) {
-        return createJsonResponse(500, {
+        return createJsonResponse(Number(error && error.statusCode) || 500, {
             ok: false,
-            error: textValue(error && error.message) || "Unknown error"
+            code: textValue(error && error.code) || "submit_failed",
+            stage: textValue(error && error.stage),
+            error: textValue(error && error.message) || "Unknown error",
+            details: error && error.details && typeof error.details === "object" ? error.details : {}
         });
     }
+};
+
+exports.__private = {
+    slugify,
+    buildSubmissionIdentity,
+    getCanonicalSubmissionPath,
+    buildCustomThemeId,
+    buildWorkingBranchName
 };

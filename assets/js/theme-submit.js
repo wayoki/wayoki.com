@@ -1,6 +1,41 @@
 (function () {
     const themeRuntime = window.WayokiThemeSwitcher || null;
     const submitConfigRuntime = window.WayokiThemeSubmitConfig || {};
+    const transliterationMap = {
+        а: "a",
+        б: "b",
+        в: "v",
+        г: "g",
+        д: "d",
+        е: "e",
+        ё: "e",
+        ж: "zh",
+        з: "z",
+        и: "i",
+        й: "y",
+        к: "k",
+        л: "l",
+        м: "m",
+        н: "n",
+        о: "o",
+        п: "p",
+        р: "r",
+        с: "s",
+        т: "t",
+        у: "u",
+        ф: "f",
+        х: "h",
+        ц: "ts",
+        ч: "ch",
+        ш: "sh",
+        щ: "sch",
+        ъ: "",
+        ы: "y",
+        ь: "",
+        э: "e",
+        ю: "yu",
+        я: "ya"
+    };
     const editableThemeTokens = [
         "--theme-color-scheme",
         "--color-accent",
@@ -47,11 +82,15 @@
         ru: {
             invalidThemeName: "Укажите имя темы.",
             invalidAuthorName: "Укажите имя автора.",
+            invalidThemeSlug: "Имя темы должно содержать хотя бы одну букву или цифру после нормализации.",
+            invalidAuthorSlug: "Имя автора должно содержать хотя бы одну букву или цифру после нормализации.",
             invalidTokens: "Не удалось собрать редактируемые токены темы."
         },
         en: {
             invalidThemeName: "Please provide a theme name.",
             invalidAuthorName: "Please provide an author name.",
+            invalidThemeSlug: "Theme name must contain at least one letter or digit after normalization.",
+            invalidAuthorSlug: "Author name must contain at least one letter or digit after normalization.",
             invalidTokens: "Couldn't collect editable tokens."
         }
     };
@@ -67,6 +106,41 @@
 
     function textValue(value) {
         return typeof value === "string" ? value.trim() : "";
+    }
+
+    function slugify(value) {
+        const input = textValue(value)
+            .normalize("NFKD")
+            .replace(/[\u0300-\u036f]/g, "")
+            .toLowerCase();
+        let transliterated = "";
+
+        for (const character of input) {
+            transliterated += Object.prototype.hasOwnProperty.call(transliterationMap, character)
+                ? transliterationMap[character]
+                : character;
+        }
+
+        return transliterated
+            .replace(/[^a-z0-9]+/g, "-")
+            .replace(/-{2,}/g, "-")
+            .replace(/^-+|-+$/g, "");
+    }
+
+    function buildSubmissionIdentity(themeName, authorName) {
+        const normalizedThemeName = textValue(themeName);
+        const normalizedAuthorName = textValue(authorName);
+        const themeSlug = slugify(normalizedThemeName);
+        const authorSlug = slugify(normalizedAuthorName);
+
+        return {
+            themeName: normalizedThemeName,
+            authorName: normalizedAuthorName,
+            themeSlug,
+            authorSlug,
+            catalogKey: authorSlug && themeSlug ? `${authorSlug}/${themeSlug}` : "",
+            filePath: authorSlug && themeSlug ? `collab/site-ui/submissions/${authorSlug}/${themeSlug}.json` : ""
+        };
     }
 
     function detectLocale() {
@@ -90,6 +164,26 @@
         const configuredEndpoint = textValue(submitConfigRuntime.endpoint);
 
         return elementEndpoint || documentEndpoint || configuredEndpoint;
+    }
+
+    function resolveEndpointUrl(endpoint) {
+        const configuredEndpoint = textValue(endpoint) || getConfiguredEndpoint();
+
+        if (!configuredEndpoint) {
+            return "";
+        }
+
+        try {
+            const resolvedUrl = new URL(configuredEndpoint, window.location.origin);
+
+            if (resolvedUrl.protocol !== "http:" && resolvedUrl.protocol !== "https:") {
+                return "";
+            }
+
+            return resolvedUrl.toString();
+        } catch (error) {
+            return "";
+        }
     }
 
     function getTimeoutMs() {
@@ -168,14 +262,16 @@
     }
 
     function createThemePayload(fields = {}) {
-        const themeName = textValue(fields.themeName);
-        const authorName = textValue(fields.authorName);
+        const identity = buildSubmissionIdentity(fields.themeName, fields.authorName);
+        const themeName = identity.themeName;
+        const authorName = identity.authorName;
         const creditText = textValue(fields.creditText);
         const sourceTheme = getBaseTheme(textValue(fields.sourceTheme) || getCurrentTheme());
         const providedTokens = collectProvidedTokens(fields.tokens);
         const tokens = Object.keys(providedTokens).length ? providedTokens : collectEditableTokens();
         const payload = {
             themeName,
+            authorName,
             sourceTheme,
             submittedAt: new Date().toISOString(),
             tokens,
@@ -185,10 +281,6 @@
                 page: `${window.location.pathname}${window.location.search}`
             }
         };
-
-        if (authorName) {
-            payload.authorName = authorName;
-        }
 
         if (creditText) {
             payload.creditText = creditText;
@@ -209,6 +301,14 @@
 
         if (!textValue(payload.authorName)) {
             return messages.invalidAuthorName;
+        }
+
+        if (!slugify(payload.themeName)) {
+            return messages.invalidThemeSlug;
+        }
+
+        if (!slugify(payload.authorName)) {
+            return messages.invalidAuthorSlug;
         }
 
         if (!payload.tokens || !Object.keys(payload.tokens).length) {
@@ -377,8 +477,22 @@
     }
 
     function submitPayload(payload, endpoint) {
-        const resolvedEndpoint = textValue(endpoint) || getConfiguredEndpoint();
+        const resolvedEndpoint = resolveEndpointUrl(endpoint);
         const abortOptions = createAbortOptions(getTimeoutMs());
+
+        if (!resolvedEndpoint) {
+            const error = new Error("Theme submit endpoint is invalid or not configured");
+            error.result = {
+                response: null,
+                data: {
+                    code: "invalid_endpoint"
+                },
+                text: "",
+                message: error.message,
+                link: ""
+            };
+            throw error;
+        }
 
         return fetch(resolvedEndpoint, {
             method: "POST",
@@ -420,11 +534,14 @@
         detectLocale,
         getLocaleMessages,
         getConfiguredEndpoint,
+        resolveEndpointUrl,
         getTimeoutMs,
         normalizeTheme,
         getThemeMeta,
         getCurrentTheme,
         readThemeCredit,
+        slugify,
+        buildSubmissionIdentity,
         collectEditableTokens,
         createThemePayload,
         validateThemePayload,
