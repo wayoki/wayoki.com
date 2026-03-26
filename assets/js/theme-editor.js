@@ -35,6 +35,7 @@
             submitCreated: "Тема отправлена как новая.",
             submitUpdated: "Тема обновлена.",
             submitSuccess: "Тема отправлена.",
+            submitNotice: "Настройки сохранены, ожидайте публикации",
             submitFailed: "Не удалось отправить тему",
             submitUnavailableLocal: "Сабмит недоступен в локальном режиме. Проверь CORS или используй продовый домен.",
             submitModalTitle: "Отправка темы",
@@ -68,6 +69,7 @@
             submitCreated: "Theme created.",
             submitUpdated: "Theme updated.",
             submitSuccess: "Theme submitted.",
+            submitNotice: "Settings saved. Please wait for publication",
             submitFailed: "Failed to submit theme",
             submitUnavailableLocal: "Submit is unavailable in local mode. Check CORS or use the production domain.",
             submitModalTitle: "Submit theme",
@@ -698,6 +700,38 @@
         }
     }
 
+    function clearToast(state) {
+        if (!state.toast) {
+            return;
+        }
+
+        if (state.toastTimeout) {
+            window.clearTimeout(state.toastTimeout);
+            state.toastTimeout = 0;
+        }
+
+        state.toast.hidden = true;
+        state.toast.textContent = "";
+        state.toast.dataset.status = "";
+    }
+
+    function showToast(state, kind, message, options = {}) {
+        if (!state.toast || !textValue(message)) {
+            return;
+        }
+
+        clearToast(state);
+        state.toast.hidden = false;
+        state.toast.textContent = message;
+        state.toast.dataset.status = kind;
+
+        if (options.duration && Number(options.duration) > 0) {
+            state.toastTimeout = window.setTimeout(() => {
+                clearToast(state);
+            }, Number(options.duration));
+        }
+    }
+
     function hasInvalidTokenFields(state) {
         return state.fieldEntries.some((entry) => entry.input.getAttribute("aria-invalid") === "true");
     }
@@ -894,6 +928,7 @@
         closeColorPicker(state);
         closeSubmitModal(state);
         clearPreviewHighlight(state);
+        clearToast(state);
         if (state.submitModalButton) {
             state.submitModalButton.textContent = state.labels.submitNow;
         }
@@ -1516,6 +1551,7 @@
         const resetButton = createElement("button", "theme-button theme-editor-button theme-editor-button-secondary", state.labels.reset);
         const submitButton = createElement("button", "theme-button theme-editor-button theme-editor-button-primary", state.labels.submit);
         const status = createElement("p", "theme-editor-status");
+        const toast = createElement("p", "theme-editor-toast");
 
         title.id = "theme-editor-title";
         exitLink.href = getCustomizationExitHref(state.locale);
@@ -1531,6 +1567,8 @@
         status.hidden = true;
         status.setAttribute("aria-live", "polite");
         statusRow.hidden = true;
+        toast.hidden = true;
+        toast.setAttribute("aria-live", "polite");
 
         actions.append(exitLink, resetButton, submitButton);
         controls.append(actions);
@@ -1583,8 +1621,10 @@
         state.status = status;
         state.exitLink = exitLink;
         state.resizeHandle = resizeHandle;
+        state.toast = toast;
 
         document.body.prepend(bar);
+        document.body.append(toast);
         buildColorPicker(state);
         buildSubmitModal(state);
         applyEditorHeight(state, state.editorHeight);
@@ -1724,24 +1764,14 @@
                     state.submitButton.textContent = state.labels.submitted;
                     state.submitModalButton.disabled = true;
                     state.submitModalButton.textContent = state.labels.submitted;
-                    state.baselineDraft = cloneDraft(state.currentDraft);
-                    persistDraftRecord(state);
+                    clearDraftRecord();
                     closeSubmitModal(state);
-                    setStatus(
-                        state,
-                        "success",
-                        result && result.data && result.data.action === "update"
-                            ? state.labels.submitUpdated
-                            : result && result.data && result.data.action === "create"
-                              ? state.labels.submitCreated
-                              : state.labels.submitSuccess
-                    );
+                    setStatus(state, "", "");
+                    showToast(state, "success", state.labels.submitNotice);
 
                     window.setTimeout(() => {
-                        state.submitButton.textContent = state.labels.submit;
-                        state.submitModalButton.textContent = state.labels.submitNow;
-                        updateButtonState(state);
-                    }, 1800);
+                        window.location.href = getCustomizationExitHref(state.locale);
+                    }, 1350);
                 })
                 .catch((error) => {
                     state.submitting = false;
@@ -1765,7 +1795,9 @@
         });
 
         const observer = new MutationObserver((mutations) => {
-            const themeChanged = mutations.some((mutation) => mutation.attributeName === "data-theme");
+            const themeChanged = mutations.some(
+                (mutation) => mutation.attributeName === "data-theme" || mutation.attributeName === "data-theme-selection"
+            );
 
             if (!themeChanged || state.isApplyingDraft) {
                 return;
@@ -1794,18 +1826,18 @@
 
         observer.observe(document.documentElement, {
             attributes: true,
-            attributeFilter: ["data-theme"]
+            attributeFilter: ["data-theme", "data-theme-selection"]
         });
     }
 
     function restoreDraftState(state) {
         const storedRecord = readStoredDraftRecord();
 
-        if (storedRecord && storedRecord.current && textValue(storedRecord.current.baseTheme) && themeRuntime && typeof themeRuntime.selectTheme === "function") {
+        if (storedRecord && storedRecord.current && textValue(storedRecord.current.baseTheme) && themeRuntime && typeof themeRuntime.applyTheme === "function") {
             const storedTheme = textValue(storedRecord.current.baseTheme);
 
             if (storedTheme && storedTheme !== submitService.getCurrentTheme()) {
-                themeRuntime.selectTheme(storedTheme);
+                themeRuntime.applyTheme(storedTheme);
             }
         }
 

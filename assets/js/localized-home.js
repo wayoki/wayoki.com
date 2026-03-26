@@ -3,7 +3,6 @@ const themeRuntime = window.WayokiThemeSwitcher || null;
 const newsFeedUrl = "https://script.google.com/macros/s/AKfycbwk3ctmn8qMPDTxkLBoz1K3uSZbN4ICpu70hooE4kGI0TCJtvZt2Rcz4IxNNfhnbn7p/exec";
 const newsCacheStorageKey = "wayoki_news_cache";
 const newsFallbackUrl = "https://t.me/wayoki";
-const themeDraftRuntime = window.WayokiThemeEditorDraft || null;
 const newsPreviewLimits = {
     feature: 180,
     card: 120
@@ -65,6 +64,7 @@ function applyTheme(theme) {
     }
 
     document.documentElement.dataset.theme = nextTheme;
+    document.documentElement.setAttribute("data-theme-selection", nextTheme);
     return nextTheme;
 }
 
@@ -98,6 +98,16 @@ function getThemeMeta(theme) {
     }
 
     return getThemeCatalog()[normalizeTheme(theme)] || null;
+}
+
+function getActiveTheme() {
+    if (themeRuntime && typeof themeRuntime.readActiveTheme === "function") {
+        return themeRuntime.readActiveTheme();
+    }
+
+    return normalizeTheme(
+        textValue(document.documentElement.getAttribute("data-theme-selection")) || textValue(document.documentElement.dataset.theme)
+    );
 }
 
 function isAuthorTheme(theme) {
@@ -143,6 +153,12 @@ function isArchivePage() {
     const pathname = window.location.pathname.toLowerCase();
 
     return pathname.endsWith("/news") || pathname.includes("/news/");
+}
+
+function isCustomizationRoute() {
+    const pathname = window.location.pathname.toLowerCase().replace(/\/+$/u, "");
+
+    return pathname === "/ru/customization" || pathname === "/en/customization";
 }
 
 function textValue(value) {
@@ -780,10 +796,6 @@ function prefetchNews(locale, options = {}) {
 
 applyTheme(readStoredTheme());
 
-if (themeDraftRuntime && typeof themeDraftRuntime.applyStoredDraftPreview === "function") {
-    themeDraftRuntime.applyStoredDraftPreview();
-}
-
 document.addEventListener("DOMContentLoaded", () => {
     let themeButtons = document.querySelectorAll("[data-theme-option]");
     const themeMenuToggle = document.querySelector("[data-theme-menu-toggle]");
@@ -792,6 +804,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const customThemeList = document.querySelector("[data-theme-custom-list]");
     const locale = detectLocale();
     const archiveView = isArchivePage();
+    const customizationRoute = isCustomizationRoute();
     const newsStore = new Map();
     const elements = {
         newsSection: document.getElementById("news"),
@@ -865,17 +878,31 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function buildThemeButton(theme, className) {
         const button = document.createElement("button");
+        const copy = document.createElement("span");
         const label = document.createElement("span");
+        const themeMeta = getThemeMeta(theme);
+        const authorName = textValue(themeMeta && themeMeta.authorName);
 
         button.className = className;
         button.type = "button";
         button.dataset.themeOption = theme;
         button.setAttribute("aria-pressed", "false");
-        button.setAttribute("aria-label", getThemeDisplayLabel(theme));
+        button.setAttribute("aria-label", authorName ? `${getThemeDisplayLabel(theme)} — ${authorName}` : getThemeDisplayLabel(theme));
 
+        copy.className = "theme-button-copy";
         label.className = "theme-button-label";
         label.textContent = getThemeDisplayLabel(theme);
-        button.append(label);
+        copy.append(label);
+
+        if (authorName) {
+            const meta = document.createElement("span");
+
+            meta.className = "theme-button-meta";
+            meta.textContent = authorName;
+            copy.append(meta);
+        }
+
+        button.append(copy);
 
         return button;
     }
@@ -894,13 +921,14 @@ document.addEventListener("DOMContentLoaded", () => {
         });
 
         themeButtons = document.querySelectorAll("[data-theme-option]");
+        const activeTheme = getActiveTheme() || readStoredTheme();
 
         if (customThemeToggle) {
             customThemeToggle.hidden = !customThemeList.children.length;
-            customThemeToggle.setAttribute("aria-expanded", String(isAuthorTheme(readStoredTheme())));
+            customThemeToggle.setAttribute("aria-expanded", String(isAuthorTheme(activeTheme)));
         }
 
-        customThemeList.hidden = !customThemeList.children.length || !isAuthorTheme(readStoredTheme());
+        customThemeList.hidden = !customThemeList.children.length || !isAuthorTheme(activeTheme);
     }
 
     function setCustomThemeListOpen(nextOpen) {
@@ -920,20 +948,18 @@ document.addEventListener("DOMContentLoaded", () => {
         themeMenu.hidden = !nextOpen;
         themeMenuToggle.setAttribute("aria-expanded", String(nextOpen));
 
-        if (!nextOpen && !isAuthorTheme(document.documentElement.dataset.theme)) {
+        if (!nextOpen && !isAuthorTheme(getActiveTheme())) {
             setCustomThemeListOpen(false);
         }
     }
 
     populateCustomThemeList();
 
-    const initialTheme = applyTheme(readStoredTheme());
+    const initialTheme = customizationRoute
+        ? getActiveTheme() || readStoredTheme()
+        : applyTheme(readStoredTheme());
 
-    if (themeDraftRuntime && typeof themeDraftRuntime.applyStoredDraftPreview === "function") {
-        themeDraftRuntime.applyStoredDraftPreview();
-    }
-
-    const activeTheme = textValue(document.documentElement.dataset.theme) || initialTheme;
+    const activeTheme = getActiveTheme() || initialTheme;
 
     syncThemeButtons(activeTheme);
     setCustomThemeListOpen(isAuthorTheme(activeTheme));
@@ -971,7 +997,7 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
-        const nextTheme = selectTheme(button.dataset.themeOption);
+        const nextTheme = customizationRoute ? applyTheme(button.dataset.themeOption) : selectTheme(button.dataset.themeOption);
 
         syncThemeButtons(nextTheme);
         setCustomThemeListOpen(isAuthorTheme(nextTheme));

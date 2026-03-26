@@ -13,7 +13,7 @@
                 label: "Dark",
                 credit: ""
             },
-            "submission-test--test": {
+            "test/test": {
                 group: "author",
                 label: "test",
                 themeName: "test",
@@ -59,7 +59,7 @@
                     "--feature-plaque-shadow": "0 30px 60px rgba(18, 15, 7, 0.06),\n        inset 0 1px 0 rgba(255, 255, 255, 0.74)"
                 }
             },
-            "submission-test1--test1": {
+            "test1/test1": {
                 group: "author",
                 label: "test1",
                 themeName: "test1",

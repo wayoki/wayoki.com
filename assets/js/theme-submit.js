@@ -115,7 +115,19 @@
     }
 
     function getCurrentTheme() {
+        if (themeRuntime && typeof themeRuntime.readActiveTheme === "function") {
+            return themeRuntime.readActiveTheme();
+        }
+
         return normalizeTheme(document.documentElement.dataset.theme);
+    }
+
+    function getBaseTheme(theme) {
+        if (themeRuntime && typeof themeRuntime.getBaseTheme === "function") {
+            return themeRuntime.getBaseTheme(theme);
+        }
+
+        return normalizeTheme(theme);
     }
 
     function readThemeCredit(theme) {
@@ -159,7 +171,7 @@
         const themeName = textValue(fields.themeName);
         const authorName = textValue(fields.authorName);
         const creditText = textValue(fields.creditText);
-        const sourceTheme = textValue(fields.sourceTheme) || getCurrentTheme();
+        const sourceTheme = getBaseTheme(textValue(fields.sourceTheme) || getCurrentTheme());
         const providedTokens = collectProvidedTokens(fields.tokens);
         const tokens = Object.keys(providedTokens).length ? providedTokens : collectEditableTokens();
         const payload = {

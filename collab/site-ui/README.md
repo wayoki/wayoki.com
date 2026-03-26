@@ -8,6 +8,7 @@
 - `themes.css` — подключает только core theme packs
 - `submissions/**/*.json` — source of truth для merged custom themes
 - `theme-registry.js` — generated frontend registry, который собирается из merged submission files
+- `scripts/generate-theme-registry.mjs` — детерминированный generator для пересборки registry из `submissions/**`
 
 ## Откуда берутся Custom themes
 
@@ -38,6 +39,10 @@ Submit backend:
 - merged theme уже есть в `submissions/`
 - generated registry уже обновлён
 - тема появляется в dropdown без ручного редактирования кода
+
+Для локальной пересборки registry можно использовать:
+
+`node scripts/generate-theme-registry.mjs`
 
 ## Что не нужно делать вручную
 

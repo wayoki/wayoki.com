@@ -821,6 +821,32 @@ body.localized-page a {
     display: none !important;
 }
 
+.theme-editor-toast {
+    position: fixed;
+    top: 88px;
+    right: 20px;
+    z-index: 38;
+    max-width: min(360px, calc(100vw - 32px));
+    margin: 0;
+    padding: 10px 14px;
+    border: 1px solid var(--theme-editor-panel-border);
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--theme-editor-panel-bg) 90%, transparent);
+    box-shadow: var(--theme-editor-panel-shadow);
+    color: var(--editor-text);
+    font-size: 12px;
+    line-height: 1.4;
+    backdrop-filter: blur(10px);
+}
+
+.theme-editor-toast[hidden] {
+    display: none !important;
+}
+
+.theme-editor-toast[data-status="success"] {
+    border-color: color-mix(in srgb, var(--color-success) 28%, var(--theme-editor-panel-border));
+}
+
 .theme-editor-submit-dialog {
     width: min(420px, 100%);
     margin-top: clamp(68px, 10vh, 116px);
@@ -1033,6 +1059,22 @@ body.localized-page a {
     gap: 10px;
 }
 
+.theme-button-copy {
+    min-width: 0;
+    display: grid;
+    justify-items: start;
+    gap: 2px;
+    text-align: left;
+}
+
+.theme-button-meta {
+    font-size: 10px;
+    line-height: 1.2;
+    letter-spacing: 0.04em;
+    text-transform: none;
+    color: var(--color-text-muted);
+}
+
 .theme-button-option-trailing {
     margin-left: auto;
     color: var(--color-text-muted);
@@ -1045,6 +1087,14 @@ body.localized-page a {
 }
 
 .theme-button-option-custom {
+    min-height: 42px;
+    align-items: flex-start;
+    padding-top: 7px;
+    padding-bottom: 7px;
+    padding-left: 12px;
+}
+
+.theme-button-option-create {
     min-height: 32px;
     padding-left: 12px;
 }

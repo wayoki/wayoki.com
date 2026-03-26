@@ -2,6 +2,7 @@
     const themeStorageKey = "wayoki-localized-theme";
     const fallbackTheme = "light";
     const runtimeThemeStyleId = "wayoki-runtime-theme-style";
+    const themeSelectionAttribute = "data-theme-selection";
     const fallbackThemeCatalog = {
         light: {
             group: "core",
@@ -33,12 +34,56 @@
         return Object.prototype.hasOwnProperty.call(themeCatalog, theme);
     }
 
+    function isCoreTheme(theme) {
+        const themeMeta = themeCatalog[theme];
+
+        return Boolean(themeMeta && themeMeta.group !== "author");
+    }
+
     function textValue(value) {
         return typeof value === "string" ? value.trim() : "";
     }
 
+    function buildStableCustomThemeId(authorSlug, themeSlug) {
+        const nextAuthorSlug = textValue(authorSlug);
+        const nextThemeSlug = textValue(themeSlug);
+
+        return nextAuthorSlug && nextThemeSlug ? `${nextAuthorSlug}/${nextThemeSlug}` : "";
+    }
+
+    function resolveLegacyThemeAlias(theme) {
+        const nextTheme = textValue(theme);
+        const legacyMatch = nextTheme.match(/^submission-([a-z0-9-]+)--([a-z0-9-]+)$/u);
+
+        if (!legacyMatch) {
+            return nextTheme;
+        }
+
+        return buildStableCustomThemeId(legacyMatch[1], legacyMatch[2]) || nextTheme;
+    }
+
     function normalizeTheme(theme) {
-        return isSupportedTheme(theme) ? theme : defaultTheme;
+        const nextTheme = textValue(theme);
+
+        if (isSupportedTheme(nextTheme)) {
+            return nextTheme;
+        }
+
+        const aliasedTheme = resolveLegacyThemeAlias(nextTheme);
+
+        return isSupportedTheme(aliasedTheme) ? aliasedTheme : defaultTheme;
+    }
+
+    function getBaseTheme(theme) {
+        const nextTheme = normalizeTheme(theme);
+        const themeMeta = themeCatalog[nextTheme];
+        const configuredSourceTheme = textValue(themeMeta && themeMeta.sourceTheme);
+
+        if (configuredSourceTheme && isSupportedTheme(configuredSourceTheme) && isCoreTheme(configuredSourceTheme)) {
+            return configuredSourceTheme;
+        }
+
+        return isCoreTheme(nextTheme) ? nextTheme : defaultTheme;
     }
 
     function readStoredTheme() {
@@ -49,8 +94,14 @@
                 return defaultTheme;
             }
 
-            if (isSupportedTheme(storedTheme)) {
-                return storedTheme;
+            const normalizedStoredTheme = normalizeTheme(storedTheme);
+
+            if (normalizedStoredTheme !== defaultTheme || isSupportedTheme(storedTheme)) {
+                if (normalizedStoredTheme !== storedTheme) {
+                    localStorage.setItem(themeStorageKey, normalizedStoredTheme);
+                }
+
+                return normalizedStoredTheme;
             }
 
             localStorage.removeItem(themeStorageKey);
@@ -77,6 +128,16 @@
 
     function getThemeMeta(theme) {
         return themeCatalog[normalizeTheme(theme)];
+    }
+
+    function readActiveTheme() {
+        const explicitSelection = textValue(document.documentElement.getAttribute(themeSelectionAttribute));
+
+        if (explicitSelection) {
+            return normalizeTheme(explicitSelection);
+        }
+
+        return normalizeTheme(document.documentElement.dataset.theme);
     }
 
     function getThemeTokens(theme) {
@@ -148,9 +209,11 @@
 
     function applyTheme(theme, options = {}) {
         const nextTheme = normalizeTheme(theme);
+        const baseTheme = getBaseTheme(nextTheme);
         const root = options.root || document;
 
-        document.documentElement.dataset.theme = nextTheme;
+        document.documentElement.dataset.theme = baseTheme;
+        document.documentElement.setAttribute(themeSelectionAttribute, nextTheme);
         syncRuntimeThemeTokens(nextTheme);
         syncThemeButtons(root, nextTheme);
         syncThemeCredits(root, nextTheme);
@@ -177,6 +240,8 @@
         persistTheme,
         selectTheme,
         getThemeMeta,
+        getBaseTheme,
+        readActiveTheme,
         syncThemeButtons,
         syncThemeCredits,
         getThemeTokens,

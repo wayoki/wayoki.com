@@ -135,7 +135,7 @@ function sanitizeMeta(meta) {
 }
 
 function buildCustomThemeId(authorSlug, themeSlug) {
-    return `submission-${authorSlug}--${themeSlug}`;
+    return `${authorSlug}/${themeSlug}`;
 }
 
 function buildStoredThemeDocument(payload, existingDocument, authorSlug, themeSlug, nowIso) {
