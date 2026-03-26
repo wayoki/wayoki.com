@@ -19,8 +19,8 @@
                 en: ["home", "homepage", "site", "wayoki", "start"]
             },
             description: {
-                ru: "Главная страница с текущим проектом и свежими обновлениями.",
-                en: "Homepage with the featured project and the latest updates."
+                ru: "Главная страница с DevTools для дизайнеров и свежими обновлениями.",
+                en: "Homepage with DevTools for designers and the latest updates."
             }
         },
         {
@@ -33,16 +33,16 @@
                 en: "/en/#game-title"
             },
             label: {
-                ru: "Kaidan",
-                en: "Kaidan"
+                ru: "DevTools",
+                en: "DevTools"
             },
             keywords: {
-                ru: ["кайдан", "проект", "игра", "текущий проект", "лестница", "лиминальный хоррор"],
-                en: ["kaidan", "project", "game", "featured project", "stairwell", "liminal horror"]
+                ru: ["devtools", "инструменты", "для дизайнеров", "кастомизация", "кастомные визуалы", "редактор темы"],
+                en: ["devtools", "tools", "for designers", "customization", "custom visuals", "theme editor"]
             },
             description: {
-                ru: "Текущий проект WAYOKI с бесконечной лестницей и тихим лиминальным ужасом.",
-                en: "WAYOKI's featured project with an endless stairwell and restrained liminal horror."
+                ru: "Инструментарий WAYOKI для редактирования и публикации кастомных визуалов сайта.",
+                en: "WAYOKI toolkit for editing and publishing custom site visuals."
             }
         },
         {
