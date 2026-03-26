@@ -120,6 +120,46 @@ function buildCustomThemeId(authorSlug, themeSlug) {
     return `${authorSlug}/${themeSlug}`;
 }
 
+function normalizeAuthorLink(value) {
+    const rawValue = textValue(value);
+
+    if (!rawValue) {
+        return "";
+    }
+
+    let candidate = rawValue.replace(/^@+/u, "");
+
+    if (!candidate) {
+        return "";
+    }
+
+    if (/^\/\//u.test(candidate)) {
+        candidate = `https:${candidate}`;
+    } else if (!/^[a-z][a-z0-9+.-]*:/iu.test(candidate)) {
+        if (!/[./]/u.test(candidate)) {
+            return "";
+        }
+
+        candidate = `https://${candidate.replace(/^\/+/u, "")}`;
+    }
+
+    try {
+        const url = new URL(candidate);
+
+        if (url.protocol !== "https:" && url.protocol !== "http:") {
+            return "";
+        }
+
+        if (!textValue(url.hostname) || !url.hostname.includes(".")) {
+            return "";
+        }
+
+        return url.toString();
+    } catch (error) {
+        return "";
+    }
+}
+
 function normalizeSubmissionEntry(filePath, document) {
     const themeName = textValue(document && document.themeName);
     const authorName = textValue(document && document.authorName);
@@ -140,6 +180,7 @@ function normalizeSubmissionEntry(filePath, document) {
         authorSlug,
         themeSlug,
         creditText: textValue(document && document.creditText) || `by: ${authorName}`,
+        authorLink: normalizeAuthorLink(document && document.authorLink),
         sourceTheme: textValue(document && document.sourceTheme),
         createdAt: textValue(document && document.createdAt) || textValue(document && document.submittedAt),
         updatedAt: textValue(document && document.updatedAt) || textValue(document && document.submittedAt),
@@ -196,6 +237,7 @@ function buildThemeRegistryEntry(normalized) {
             label: normalized.themeName,
             themeName: normalized.themeName,
             authorName: normalized.authorName,
+            authorLink: normalized.authorLink,
             authorSlug: normalized.authorSlug,
             themeSlug: normalized.themeSlug,
             credit: normalized.creditText,

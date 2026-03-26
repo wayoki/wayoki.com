@@ -44,6 +44,46 @@
         return typeof value === "string" ? value.trim() : "";
     }
 
+    function normalizeAuthorLink(value) {
+        const rawValue = textValue(value);
+
+        if (!rawValue) {
+            return "";
+        }
+
+        let candidate = rawValue.replace(/^@+/u, "");
+
+        if (!candidate) {
+            return "";
+        }
+
+        if (/^\/\//u.test(candidate)) {
+            candidate = `https:${candidate}`;
+        } else if (!/^[a-z][a-z0-9+.-]*:/iu.test(candidate)) {
+            if (!/[./]/u.test(candidate)) {
+                return "";
+            }
+
+            candidate = `https://${candidate.replace(/^\/+/u, "")}`;
+        }
+
+        try {
+            const url = new URL(candidate);
+
+            if (url.protocol !== "https:" && url.protocol !== "http:") {
+                return "";
+            }
+
+            if (!textValue(url.hostname) || !url.hostname.includes(".")) {
+                return "";
+            }
+
+            return url.toString();
+        } catch (error) {
+            return "";
+        }
+    }
+
     function buildStableCustomThemeId(authorSlug, themeSlug) {
         const nextAuthorSlug = textValue(authorSlug);
         const nextThemeSlug = textValue(themeSlug);
@@ -198,12 +238,32 @@
 
     function syncThemeCredits(root, theme) {
         const nextTheme = normalizeTheme(theme);
-        const credit = getThemeMeta(nextTheme).credit;
+        const themeMeta = getThemeMeta(nextTheme) || {};
+        const credit = themeMeta.credit;
+        const authorLink = normalizeAuthorLink(themeMeta.authorLink);
 
         root.querySelectorAll("[data-theme-credit]").forEach((element) => {
-            element.textContent = credit;
             element.dataset.themeCreditFor = nextTheme;
             element.hidden = !credit;
+
+            if (!credit) {
+                element.textContent = "";
+                return;
+            }
+
+            if (!authorLink) {
+                element.textContent = credit;
+                return;
+            }
+
+            const link = document.createElement("a");
+
+            link.className = "brand-credit-link";
+            link.href = authorLink;
+            link.target = "_blank";
+            link.rel = "noopener noreferrer";
+            link.textContent = credit;
+            element.replaceChildren(link);
         });
     }
 

@@ -112,6 +112,7 @@ function buildSubmissionIdentity(themeName, authorName) {
     const normalizedAuthorName = textValue(authorName);
     const themeSlug = slugify(normalizedThemeName);
     const authorSlug = slugify(normalizedAuthorName);
+    const submissionPath = authorSlug && themeSlug ? getCanonicalSubmissionPath(authorSlug, themeSlug) : "";
 
     return {
         themeName: normalizedThemeName,
@@ -119,8 +120,49 @@ function buildSubmissionIdentity(themeName, authorName) {
         themeSlug,
         authorSlug,
         catalogKey: authorSlug && themeSlug ? `${authorSlug}/${themeSlug}` : "",
-        filePath: authorSlug && themeSlug ? getCanonicalSubmissionPath(authorSlug, themeSlug) : ""
+        submissionPath,
+        filePath: submissionPath
     };
+}
+
+function normalizeAuthorLink(value) {
+    const rawValue = textValue(value);
+
+    if (!rawValue) {
+        return "";
+    }
+
+    let candidate = rawValue.replace(/^@+/u, "");
+
+    if (!candidate) {
+        return "";
+    }
+
+    if (/^\/\//u.test(candidate)) {
+        candidate = `https:${candidate}`;
+    } else if (!/^[a-z][a-z0-9+.-]*:/iu.test(candidate)) {
+        if (!/[./]/u.test(candidate)) {
+            return "";
+        }
+
+        candidate = `https://${candidate.replace(/^\/+/u, "")}`;
+    }
+
+    try {
+        const url = new URL(candidate);
+
+        if (url.protocol !== "https:" && url.protocol !== "http:") {
+            return "";
+        }
+
+        if (!textValue(url.hostname) || !url.hostname.includes(".")) {
+            return "";
+        }
+
+        return url.toString();
+    } catch (error) {
+        return "";
+    }
 }
 
 function createSubmissionError(message, options = {}) {
@@ -194,11 +236,13 @@ function buildCustomThemeId(authorSlug, themeSlug) {
 function buildStoredThemeDocument(payload, existingDocument, authorSlug, themeSlug, nowIso) {
     const previousVersion = Number(existingDocument && existingDocument.version);
     const hasExistingDocument = Boolean(existingDocument);
+    const nextAuthorLink = normalizeAuthorLink(payload && payload.authorLink) || normalizeAuthorLink(existingDocument && existingDocument.authorLink);
 
     return {
         themeName: textValue(payload.themeName),
         authorName: textValue(payload.authorName),
         creditText: textValue(payload.creditText),
+        authorLink: nextAuthorLink,
         sourceTheme: textValue(payload.sourceTheme) || textValue(existingDocument && existingDocument.sourceTheme),
         submittedAt: textValue(payload.submittedAt) || nowIso,
         createdAt: textValue(existingDocument && existingDocument.createdAt) || textValue(existingDocument && existingDocument.submittedAt) || nowIso,
@@ -242,6 +286,7 @@ function normalizeSubmissionEntry(filePath, document) {
         authorSlug,
         themeSlug,
         creditText: textValue(document && document.creditText) || `by: ${authorName}`,
+        authorLink: normalizeAuthorLink(document && document.authorLink),
         sourceTheme: textValue(document && document.sourceTheme),
         createdAt: textValue(document && document.createdAt) || textValue(document && document.submittedAt),
         updatedAt: textValue(document && document.updatedAt) || textValue(document && document.submittedAt),
@@ -575,6 +620,7 @@ function buildThemeRegistryEntry(filePath, document) {
             label: normalized.themeName,
             themeName: normalized.themeName,
             authorName: normalized.authorName,
+            authorLink: normalized.authorLink,
             authorSlug: normalized.authorSlug,
             themeSlug: normalized.themeSlug,
             credit: normalized.creditText,
@@ -791,6 +837,17 @@ exports.handler = async function handler(event) {
             });
         }
 
+        if (textValue(payload.authorLink) && !normalizeAuthorLink(payload.authorLink)) {
+            return createJsonResponse(400, {
+                ok: false,
+                code: "invalid_author_link",
+                error: "authorLink must be a valid http or https URL",
+                details: {
+                    authorLink: textValue(payload.authorLink)
+                }
+            });
+        }
+
         if (!Object.keys(sanitizedTokens).length) {
             return createJsonResponse(400, {
                 ok: false,
@@ -799,9 +856,9 @@ exports.handler = async function handler(event) {
             });
         }
 
-        const filePath = submissionIdentity.filePath;
-        const existingSubmission = await readExistingSubmission(filePath);
-        const legacySubmission = existingSubmission.exists ? null : await findLegacySubmission(authorSlug, themeSlug, filePath);
+        const submissionPath = submissionIdentity.submissionPath;
+        const existingSubmission = await readExistingSubmission(submissionPath);
+        const legacySubmission = existingSubmission.exists ? null : await findLegacySubmission(authorSlug, themeSlug, submissionPath);
         const nowIso = new Date().toISOString();
         const document = buildStoredThemeDocument(
             {
@@ -844,14 +901,14 @@ exports.handler = async function handler(event) {
 
         try {
             registryScript = buildThemeRegistryScript(
-                await collectRegistrySubmissions(filePath, document, {
+                await collectRegistrySubmissions(submissionPath, document, {
                     removedFilePaths: legacySubmission ? [legacySubmission.filePath] : []
                 })
             );
         } catch (error) {
             throw wrapStageError("registry-build", "registry_build_failed", "Failed to build theme registry", error, {
                 registryPath: GENERATED_THEME_REGISTRY_PATH,
-                filePath
+                filePath: submissionPath
             });
         }
 
@@ -860,12 +917,12 @@ exports.handler = async function handler(event) {
                 branchName,
                 commitMessage,
                 content: `${JSON.stringify(document, null, 2)}\n`,
-                filePath,
+                filePath: submissionPath,
                 sha: existingSubmission.sha
             });
         } catch (error) {
             throw wrapStageError("submission-write", "submission_write_failed", "Failed to write submission file", error, {
-                filePath
+                filePath: submissionPath
             });
         }
 
@@ -908,7 +965,7 @@ exports.handler = async function handler(event) {
                     authorSlug,
                     themeName,
                     themeSlug,
-                    filePath,
+                    filePath: submissionPath,
                     version: document.version
                 })
             });
@@ -923,7 +980,8 @@ exports.handler = async function handler(event) {
             action,
             authorSlug,
             themeSlug,
-            path: filePath,
+            path: submissionPath,
+            submissionPath,
             version: document.version,
             createdAt: document.createdAt,
             updatedAt: document.updatedAt,
@@ -944,6 +1002,7 @@ exports.handler = async function handler(event) {
 
 exports.__private = {
     slugify,
+    normalizeAuthorLink,
     buildSubmissionIdentity,
     getCanonicalSubmissionPath,
     buildCustomThemeId,

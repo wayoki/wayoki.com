@@ -165,6 +165,46 @@ function textValue(value) {
     return typeof value === "string" ? value.trim() : "";
 }
 
+function normalizeAuthorLink(value) {
+    const rawValue = textValue(value);
+
+    if (!rawValue) {
+        return "";
+    }
+
+    let candidate = rawValue.replace(/^@+/u, "");
+
+    if (!candidate) {
+        return "";
+    }
+
+    if (/^\/\//u.test(candidate)) {
+        candidate = `https:${candidate}`;
+    } else if (!/^[a-z][a-z0-9+.-]*:/iu.test(candidate)) {
+        if (!/[./]/u.test(candidate)) {
+            return "";
+        }
+
+        candidate = `https://${candidate.replace(/^\/+/u, "")}`;
+    }
+
+    try {
+        const url = new URL(candidate);
+
+        if (url.protocol !== "https:" && url.protocol !== "http:") {
+            return "";
+        }
+
+        if (!textValue(url.hostname) || !url.hostname.includes(".")) {
+            return "";
+        }
+
+        return url.toString();
+    } catch (error) {
+        return "";
+    }
+}
+
 function normalizeWhitespace(value) {
     return textValue(value).replace(/\s+/g, " ");
 }
@@ -877,14 +917,16 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function buildThemeButton(theme, className) {
-        const button = document.createElement("button");
+        const button = document.createElement("div");
         const copy = document.createElement("span");
         const label = document.createElement("span");
         const themeMeta = getThemeMeta(theme);
         const authorName = textValue(themeMeta && themeMeta.authorName);
+        const authorLink = normalizeAuthorLink(themeMeta && themeMeta.authorLink);
 
         button.className = className;
-        button.type = "button";
+        button.tabIndex = 0;
+        button.setAttribute("role", "button");
         button.dataset.themeOption = theme;
         button.setAttribute("aria-pressed", "false");
         button.setAttribute("aria-label", authorName ? `${getThemeDisplayLabel(theme)} — ${authorName}` : getThemeDisplayLabel(theme));
@@ -895,9 +937,15 @@ document.addEventListener("DOMContentLoaded", () => {
         copy.append(label);
 
         if (authorName) {
-            const meta = document.createElement("span");
+            const meta = authorLink ? document.createElement("a") : document.createElement("span");
 
-            meta.className = "theme-button-meta";
+            meta.className = authorLink ? "theme-button-meta theme-button-meta-link" : "theme-button-meta";
+            if (authorLink) {
+                meta.href = authorLink;
+                meta.target = "_blank";
+                meta.rel = "noopener noreferrer";
+                meta.dataset.themeAuthorLink = "true";
+            }
             meta.textContent = authorName;
             copy.append(meta);
         }
@@ -991,6 +1039,10 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     document.addEventListener("click", (event) => {
+        if (event.target.closest("[data-theme-author-link]")) {
+            return;
+        }
+
         const button = event.target.closest("[data-theme-option]");
 
         if (!button) {
@@ -1004,6 +1056,23 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     document.addEventListener("keydown", (event) => {
+        const button = event.target.closest("[data-theme-option]");
+
+        if (
+            button &&
+            button.tagName !== "BUTTON" &&
+            !event.target.closest("[data-theme-author-link]") &&
+            (event.key === "Enter" || event.key === " ")
+        ) {
+            event.preventDefault();
+
+            const nextTheme = customizationRoute ? applyTheme(button.dataset.themeOption) : selectTheme(button.dataset.themeOption);
+
+            syncThemeButtons(nextTheme);
+            setCustomThemeListOpen(isAuthorTheme(nextTheme));
+            return;
+        }
+
         if (event.key === "Escape" && themeMenuToggle && themeMenu && !themeMenu.hidden) {
             setThemeMenuOpen(false);
             themeMenuToggle.focus();

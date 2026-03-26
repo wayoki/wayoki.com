@@ -93,6 +93,20 @@ body.localized-page a {
     white-space: nowrap;
 }
 
+.brand-credit-link {
+    color: inherit;
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+    transition: color 180ms ease, border-color 180ms ease;
+}
+
+.brand-credit-link:hover,
+.brand-credit-link:focus-visible {
+    color: var(--color-text-primary);
+    border-color: currentColor;
+    outline: none;
+}
+
 .brand-credit[hidden] {
     display: block !important;
     visibility: hidden;
@@ -1117,6 +1131,23 @@ body.localized-page a {
     letter-spacing: 0.04em;
     text-transform: none;
     color: var(--color-text-muted);
+}
+
+.theme-button-meta-link {
+    display: inline-flex;
+    align-items: center;
+    width: fit-content;
+    max-width: 100%;
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+    transition: color 180ms ease, border-color 180ms ease;
+}
+
+.theme-button-meta-link:hover,
+.theme-button-meta-link:focus-visible {
+    color: var(--color-text-primary);
+    border-color: currentColor;
+    outline: none;
 }
 
 .theme-button-option-trailing {

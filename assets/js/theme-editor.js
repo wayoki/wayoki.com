@@ -8,6 +8,8 @@
     const editorHeightMin = 180;
     const editorHeightMax = 560;
     const editorHeightDefault = 300;
+    const submitSuccessNoticeDurationMs = 2800;
+    const submitSuccessRedirectDelayMs = 3000;
 
     if (!submitService || !editorConfig || !Array.isArray(editorConfig.sections) || !editorConfig.sections.length) {
         return;
@@ -20,6 +22,8 @@
             themeNamePlaceholder: "noir-soft",
             authorName: "Имя автора",
             authorNamePlaceholder: "alex",
+            authorLink: "Ссылка автора",
+            authorLinkPlaceholder: "t.me/instagram.com",
             reset: "Сбросить",
             submit: "Отправить тему",
             submitNow: "Отправить",
@@ -39,9 +43,10 @@
             submitFailed: "Не удалось отправить тему",
             submitUnavailableLocal: "Сабмит недоступен в локальном режиме. Проверь CORS или используй продовый домен.",
             submitModalTitle: "Отправка темы",
-            submitModalDescription: "Имя темы и имя автора запрашиваются только на этом шаге.",
+            submitModalDescription: "Имя темы, имя автора и ссылка автора запрашиваются только на этом шаге.",
             themeNameRequired: "Имя темы *",
             authorNameRequired: "Имя автора *",
+            authorLinkOptional: "Ссылка автора",
             colorPicker: "Открыть выбор цвета",
             previewJump: "Показать на странице",
             hue: "Оттенок",
@@ -54,6 +59,8 @@
             themeNamePlaceholder: "noir-soft",
             authorName: "Author name",
             authorNamePlaceholder: "alex",
+            authorLink: "Author link",
+            authorLinkPlaceholder: "t.me/instagram.com",
             reset: "Reset",
             submit: "Submit theme",
             submitNow: "Submit",
@@ -73,9 +80,10 @@
             submitFailed: "Failed to submit theme",
             submitUnavailableLocal: "Submit is unavailable in local mode. Check CORS or use the production domain.",
             submitModalTitle: "Submit theme",
-            submitModalDescription: "Theme name and author name are only requested at this final step.",
+            submitModalDescription: "Theme name, author name and author link are only requested at this final step.",
             themeNameRequired: "Theme name *",
             authorNameRequired: "Author name *",
+            authorLinkOptional: "Author link",
             colorPicker: "Open color picker",
             previewJump: "Show on page",
             hue: "Hue",
@@ -209,6 +217,7 @@
             baseTheme: textValue(draft && draft.baseTheme),
             themeName: textValue(draft && draft.themeName),
             authorName: textValue(draft && draft.authorName),
+            authorLink: textValue(draft && draft.authorLink),
             creditText: textValue(draft && draft.creditText),
             tokens: cloneTokens((draft && draft.tokens) || {})
         };
@@ -249,18 +258,46 @@
             : "";
     }
 
+    function getBaseCreditLink() {
+        return typeof submitService.readThemeAuthorLink === "function"
+            ? submitService.readThemeAuthorLink(submitService.getCurrentTheme())
+            : "";
+    }
+
     function buildCreditText(authorName) {
         const nextAuthorName = textValue(authorName);
 
         return nextAuthorName ? `by: ${nextAuthorName}` : "";
     }
 
-    function syncCreditElements(value) {
+    function syncCreditElements(value, authorLink) {
         const nextValue = textValue(value);
+        const nextAuthorLink =
+            typeof submitService.normalizeAuthorLink === "function"
+                ? submitService.normalizeAuthorLink(authorLink)
+                : textValue(authorLink);
 
         document.querySelectorAll("[data-theme-credit]").forEach((element) => {
-            element.textContent = nextValue;
             element.hidden = !nextValue;
+
+            if (!nextValue) {
+                element.textContent = "";
+                return;
+            }
+
+            if (!nextAuthorLink) {
+                element.textContent = nextValue;
+                return;
+            }
+
+            const link = document.createElement("a");
+
+            link.className = "brand-credit-link";
+            link.href = nextAuthorLink;
+            link.target = "_blank";
+            link.rel = "noopener noreferrer";
+            link.textContent = nextValue;
+            element.replaceChildren(link);
         });
     }
 
@@ -285,6 +322,7 @@
             ? {
                   invalid_theme_name: "Укажите имя темы.",
                   invalid_author_name: "Укажите имя автора.",
+                  invalid_author_link: "Укажите корректную ссылку автора.",
                   invalid_theme_slug: "Имя темы должно содержать хотя бы одну букву или цифру после нормализации.",
                   invalid_author_slug: "Имя автора должно содержать хотя бы одну букву или цифру после нормализации.",
                   invalid_tokens: "Не удалось собрать редактируемые токены темы.",
@@ -300,6 +338,7 @@
             : {
                   invalid_theme_name: "Please provide a theme name.",
                   invalid_author_name: "Please provide an author name.",
+                  invalid_author_link: "Please provide a valid author link.",
                   invalid_theme_slug: "Theme name must contain at least one letter or digit after normalization.",
                   invalid_author_slug: "Author name must contain at least one letter or digit after normalization.",
                   invalid_tokens: "Couldn't collect editable tokens.",
@@ -500,7 +539,7 @@
             getDerivedColorSchemeFromTokens(tokenMap, window.getComputedStyle(document.documentElement).getPropertyValue("--color-bg"))
         );
 
-        syncCreditElements(textValue(draft.creditText) || buildCreditText(textValue(draft.authorName)));
+        syncCreditElements(textValue(draft.creditText) || buildCreditText(textValue(draft.authorName)), textValue(draft.authorLink));
         return draft;
     }
 
@@ -544,7 +583,8 @@
         state.baseSnapshot = {
             theme: submitService.getCurrentTheme(),
             tokens,
-            creditText: getBaseCreditText()
+            creditText: getBaseCreditText(),
+            authorLink: getBaseCreditLink()
         };
 
         if (state.baseThemeValue) {
@@ -563,6 +603,7 @@
             baseTheme: textValue(state.baseSnapshot.theme),
             themeName: "",
             authorName: "",
+            authorLink: "",
             creditText: "",
             tokens
         };
@@ -593,6 +634,7 @@
             baseTheme: textValue(sourceDraft.baseTheme) || fallback.baseTheme || textValue(state.baseSnapshot.theme),
             themeName: textValue(sourceDraft.themeName),
             authorName: textValue(sourceDraft.authorName),
+            authorLink: textValue(sourceDraft.authorLink) || textValue(fallback.authorLink),
             creditText:
                 typeof sourceDraft.creditText === "string"
                     ? textValue(sourceDraft.creditText)
@@ -685,6 +727,7 @@
             baseTheme: textValue(submitService.getCurrentTheme()),
             themeName: textValue(state.currentDraft && state.currentDraft.themeName),
             authorName: textValue(state.currentDraft && state.currentDraft.authorName),
+            authorLink: textValue(state.currentDraft && state.currentDraft.authorLink),
             creditText: textValue(state.currentDraft && state.currentDraft.creditText),
             tokens
         };
@@ -717,7 +760,10 @@
         });
 
         document.documentElement.style.setProperty("--theme-color-scheme", getDerivedColorScheme(state, state.currentDraft));
-        syncCreditElements(textValue(state.currentDraft.creditText) || textValue(state.baseSnapshot.creditText));
+        syncCreditElements(
+            textValue(state.currentDraft.creditText) || textValue(state.baseSnapshot.creditText),
+            textValue(state.currentDraft.authorLink) || textValue(state.baseSnapshot.authorLink)
+        );
         state.isApplyingDraft = false;
 
         if (!options.silent) {
@@ -811,6 +857,7 @@
 
     function buildPayload(state) {
         const authorName = textValue(state.currentDraft.authorName);
+        const authorLink = textValue(state.currentDraft.authorLink);
         const creditText = buildCreditText(authorName);
         const tokens = cloneTokens(state.currentDraft.tokens);
 
@@ -820,6 +867,7 @@
         return submitService.createThemePayload({
             themeName: state.currentDraft.themeName,
             authorName,
+            authorLink,
             creditText,
             sourceTheme: state.currentDraft.baseTheme,
             tokens
@@ -1481,7 +1529,13 @@
 
         if (fieldName === "authorName") {
             state.currentDraft.creditText = buildCreditText(state.currentDraft.authorName);
-            syncCreditElements(textValue(state.currentDraft.creditText) || textValue(state.baseSnapshot.creditText));
+        }
+
+        if (fieldName === "authorName" || fieldName === "authorLink") {
+            syncCreditElements(
+                textValue(state.currentDraft.creditText) || textValue(state.baseSnapshot.creditText),
+                textValue(state.currentDraft.authorLink) || textValue(state.baseSnapshot.authorLink)
+            );
         }
 
         persistDraftRecord(state);
@@ -1509,14 +1563,16 @@
     }
 
     function openSubmitModal(state) {
-        if (!state.submitModal || !state.submitThemeInput || !state.submitAuthorInput) {
+        if (!state.submitModal || !state.submitThemeInput || !state.submitAuthorInput || !state.submitAuthorLinkInput) {
             return;
         }
 
         state.submitModalThemeTouched = false;
         state.submitModalAuthorTouched = false;
+        state.submitModalAuthorLinkTouched = false;
         state.submitThemeInput.value = textValue(state.currentDraft.themeName);
         state.submitAuthorInput.value = textValue(state.currentDraft.authorName);
+        state.submitAuthorLinkInput.value = textValue(state.currentDraft.authorLink);
         state.submitModalButton.textContent = state.labels.submitNow;
         setSubmitModalStatus(state, "", "");
         state.submitModal.hidden = false;
@@ -1560,6 +1616,7 @@
         const fields = createElement("div", "theme-editor-submit-fields");
         const themeField = createMetaField(state.labels.themeNameRequired, state.labels.themeNamePlaceholder, "submit-theme-name");
         const authorField = createMetaField(state.labels.authorNameRequired, state.labels.authorNamePlaceholder, "submit-author-name");
+        const authorLinkField = createMetaField(state.labels.authorLinkOptional, state.labels.authorLinkPlaceholder, "submit-author-link");
         const status = createElement("p", "theme-editor-status theme-editor-submit-status");
         const actions = createElement("div", "theme-editor-submit-actions");
         const confirmButton = createElement("button", "theme-button theme-editor-button theme-editor-button-primary", state.labels.submitNow);
@@ -1572,12 +1629,15 @@
         title.id = "theme-editor-submit-title";
         closeButton.type = "button";
         confirmButton.type = "button";
+        authorLinkField.input.type = "url";
+        authorLinkField.input.inputMode = "url";
+        authorLinkField.input.autocomplete = "url";
         status.hidden = true;
         status.setAttribute("aria-live", "polite");
 
         headingGroup.append(title, description);
         header.append(headingGroup, closeButton);
-        fields.append(themeField.field, authorField.field);
+        fields.append(themeField.field, authorField.field, authorLinkField.field);
         actions.append(confirmButton);
         dialog.append(header, note, fields, status, actions);
         overlay.append(dialog);
@@ -1587,6 +1647,7 @@
         state.submitModalDialog = dialog;
         state.submitThemeInput = themeField.input;
         state.submitAuthorInput = authorField.input;
+        state.submitAuthorLinkInput = authorLinkField.input;
         state.submitModalStatus = status;
         state.submitModalButton = confirmButton;
         state.submitModalCloseButton = closeButton;
@@ -1602,6 +1663,14 @@
             state.submitAuthorInput.setAttribute(
                 "aria-invalid",
                 String(Boolean(state.submitModalAuthorTouched) && !textValue(state.currentDraft.authorName))
+            );
+            state.submitAuthorLinkInput.setAttribute(
+                "aria-invalid",
+                String(
+                    Boolean(state.submitModalAuthorLinkTouched) &&
+                        Boolean(textValue(state.currentDraft.authorLink)) &&
+                        (!submitService.normalizeAuthorLink || !submitService.normalizeAuthorLink(state.currentDraft.authorLink))
+                )
             );
             state.submitModalButton.disabled = !state.isDirty || Boolean(validationError) || state.submitting;
         };
@@ -1793,6 +1862,16 @@
             updateSubmitDraftField(state, "authorName", state.submitAuthorInput.value);
         });
 
+        state.submitAuthorLinkInput.addEventListener("input", () => {
+            state.submitModalAuthorLinkTouched = true;
+            updateSubmitDraftField(state, "authorLink", state.submitAuthorLinkInput.value);
+        });
+
+        state.submitAuthorLinkInput.addEventListener("blur", () => {
+            state.submitModalAuthorLinkTouched = true;
+            updateSubmitDraftField(state, "authorLink", state.submitAuthorLinkInput.value);
+        });
+
         state.submitModalCloseButton.addEventListener("click", () => {
             closeSubmitModal(state);
         });
@@ -1854,11 +1933,13 @@
                     clearDraftRecord();
                     closeSubmitModal(state);
                     setStatus(state, "", "");
-                    showToast(state, "success", state.labels.submitNotice);
+                    showToast(state, "success", state.labels.submitNotice, {
+                        duration: submitSuccessNoticeDurationMs
+                    });
 
                     window.setTimeout(() => {
                         window.location.href = getCustomizationExitHref(state.locale);
-                    }, 1350);
+                    }, submitSuccessRedirectDelayMs);
                 })
                 .catch((error) => {
                     state.submitting = false;
@@ -1971,13 +2052,15 @@
             baseSnapshot: {
                 theme: submitService.getCurrentTheme(),
                 tokens: {},
-                creditText: ""
+                creditText: "",
+                authorLink: ""
             },
             editorHeight: getStoredEditorHeight(),
             baselineDraft: null,
             currentDraft: null,
             submitModalThemeTouched: false,
             submitModalAuthorTouched: false,
+            submitModalAuthorLinkTouched: false,
             submitting: false,
             isDirty: false,
             isApplyingDraft: false,

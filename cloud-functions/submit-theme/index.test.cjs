@@ -12,6 +12,7 @@ test("buildSubmissionIdentity keeps author/theme order for different values", ()
     assert.equal(identity.themeSlug, "theme");
     assert.equal(identity.authorSlug, "name");
     assert.equal(identity.catalogKey, "name/theme");
+    assert.equal(identity.submissionPath, "collab/site-ui/submissions/name/theme.json");
     assert.equal(identity.filePath, "collab/site-ui/submissions/name/theme.json");
 });
 
@@ -19,6 +20,7 @@ test("same values still work", () => {
     const identity = helpers.buildSubmissionIdentity("test", "test");
 
     assert.equal(identity.catalogKey, "test/test");
+    assert.equal(identity.submissionPath, "collab/site-ui/submissions/test/test.json");
     assert.equal(identity.filePath, "collab/site-ui/submissions/test/test.json");
 });
 
@@ -26,6 +28,7 @@ test("different theme for same author uses nested author/theme path", () => {
     const identity = helpers.buildSubmissionIdentity("test1", "test");
 
     assert.equal(identity.catalogKey, "test/test1");
+    assert.equal(identity.submissionPath, "collab/site-ui/submissions/test/test1.json");
     assert.equal(identity.filePath, "collab/site-ui/submissions/test/test1.json");
 });
 
@@ -35,6 +38,7 @@ test("avtor/temi resolves to the expected nested canonical path", () => {
     assert.equal(identity.authorSlug, "avtor");
     assert.equal(identity.themeSlug, "temi");
     assert.equal(identity.catalogKey, "avtor/temi");
+    assert.equal(identity.submissionPath, "collab/site-ui/submissions/avtor/temi.json");
     assert.equal(identity.filePath, "collab/site-ui/submissions/avtor/temi.json");
 });
 
@@ -69,6 +73,12 @@ test("empty slug after normalization is rejected by identity builder", () => {
 test("stable custom theme id uses author/theme format", () => {
     assert.equal(helpers.buildCustomThemeId("name", "theme"), "name/theme");
     assert.equal(helpers.getCanonicalSubmissionPath("name", "theme"), "collab/site-ui/submissions/name/theme.json");
+});
+
+test("author link normalization supports telegram and instagram style inputs", () => {
+    assert.equal(helpers.normalizeAuthorLink("t.me/wayoki"), "https://t.me/wayoki");
+    assert.equal(helpers.normalizeAuthorLink("instagram.com/wayoki"), "https://instagram.com/wayoki");
+    assert.equal(helpers.normalizeAuthorLink("name"), "");
 });
 
 test("working branch name is flat and no longer depends on slash nesting", () => {

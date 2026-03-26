@@ -82,6 +82,7 @@
         ru: {
             invalidThemeName: "Укажите имя темы.",
             invalidAuthorName: "Укажите имя автора.",
+            invalidAuthorLink: "Укажите корректную ссылку автора.",
             invalidThemeSlug: "Имя темы должно содержать хотя бы одну букву или цифру после нормализации.",
             invalidAuthorSlug: "Имя автора должно содержать хотя бы одну букву или цифру после нормализации.",
             invalidTokens: "Не удалось собрать редактируемые токены темы."
@@ -89,6 +90,7 @@
         en: {
             invalidThemeName: "Please provide a theme name.",
             invalidAuthorName: "Please provide an author name.",
+            invalidAuthorLink: "Please provide a valid author link.",
             invalidThemeSlug: "Theme name must contain at least one letter or digit after normalization.",
             invalidAuthorSlug: "Author name must contain at least one letter or digit after normalization.",
             invalidTokens: "Couldn't collect editable tokens."
@@ -132,6 +134,7 @@
         const normalizedAuthorName = textValue(authorName);
         const themeSlug = slugify(normalizedThemeName);
         const authorSlug = slugify(normalizedAuthorName);
+        const submissionPath = authorSlug && themeSlug ? `collab/site-ui/submissions/${authorSlug}/${themeSlug}.json` : "";
 
         return {
             themeName: normalizedThemeName,
@@ -139,8 +142,49 @@
             themeSlug,
             authorSlug,
             catalogKey: authorSlug && themeSlug ? `${authorSlug}/${themeSlug}` : "",
-            filePath: authorSlug && themeSlug ? `collab/site-ui/submissions/${authorSlug}/${themeSlug}.json` : ""
+            submissionPath,
+            filePath: submissionPath
         };
+    }
+
+    function normalizeAuthorLink(value) {
+        const rawValue = textValue(value);
+
+        if (!rawValue) {
+            return "";
+        }
+
+        let candidate = rawValue.replace(/^@+/u, "");
+
+        if (!candidate) {
+            return "";
+        }
+
+        if (/^\/\//u.test(candidate)) {
+            candidate = `https:${candidate}`;
+        } else if (!/^[a-z][a-z0-9+.-]*:/iu.test(candidate)) {
+            if (!/[./]/u.test(candidate)) {
+                return "";
+            }
+
+            candidate = `https://${candidate.replace(/^\/+/u, "")}`;
+        }
+
+        try {
+            const url = new URL(candidate);
+
+            if (url.protocol !== "https:" && url.protocol !== "http:") {
+                return "";
+            }
+
+            if (!textValue(url.hostname) || !url.hostname.includes(".")) {
+                return "";
+            }
+
+            return url.toString();
+        } catch (error) {
+            return "";
+        }
     }
 
     function detectLocale() {
@@ -230,6 +274,12 @@
         return themeMeta && typeof themeMeta.credit === "string" ? themeMeta.credit : "";
     }
 
+    function readThemeAuthorLink(theme) {
+        const themeMeta = getThemeMeta(theme);
+
+        return themeMeta && typeof themeMeta.authorLink === "string" ? themeMeta.authorLink : "";
+    }
+
     function collectEditableTokens() {
         const computedStyle = window.getComputedStyle(document.documentElement);
         const tokens = {};
@@ -265,6 +315,8 @@
         const identity = buildSubmissionIdentity(fields.themeName, fields.authorName);
         const themeName = identity.themeName;
         const authorName = identity.authorName;
+        const rawAuthorLink = textValue(fields.authorLink);
+        const normalizedAuthorLink = normalizeAuthorLink(rawAuthorLink);
         const creditText = textValue(fields.creditText);
         const sourceTheme = getBaseTheme(textValue(fields.sourceTheme) || getCurrentTheme());
         const providedTokens = collectProvidedTokens(fields.tokens);
@@ -284,6 +336,10 @@
 
         if (creditText) {
             payload.creditText = creditText;
+        }
+
+        if (rawAuthorLink) {
+            payload.authorLink = normalizedAuthorLink || rawAuthorLink;
         }
 
         return payload;
@@ -309,6 +365,10 @@
 
         if (!slugify(payload.authorName)) {
             return messages.invalidAuthorSlug;
+        }
+
+        if (textValue(payload.authorLink) && !normalizeAuthorLink(payload.authorLink)) {
+            return messages.invalidAuthorLink;
         }
 
         if (!payload.tokens || !Object.keys(payload.tokens).length) {
@@ -540,6 +600,8 @@
         getThemeMeta,
         getCurrentTheme,
         readThemeCredit,
+        readThemeAuthorLink,
+        normalizeAuthorLink,
         slugify,
         buildSubmissionIdentity,
         collectEditableTokens,
