@@ -1,0 +1,43 @@
+{
+  "themeName": "test1",
+  "authorName": "test1",
+  "creditText": "by: test1",
+  "submittedAt": "2026-03-26T08:09:04.709879+00:00",
+  "tokens": {
+    "--theme-color-scheme": "light",
+    "--color-accent": "#d31717",
+    "--color-accent-hover": "#d31717",
+    "--color-bg": "rgb(255, 176, 252)",
+    "--color-bg-secondary": "rgb(104, 92, 68)",
+    "--color-bg-tertiary": "rgb(36, 17, 33)",
+    "--color-bg-highlight": "rgba(255, 255, 255, 0.86)",
+    "--color-bg-glow": "rgba(255, 255, 255, 0.24)",
+    "--color-bg-accent": "rgba(255, 255, 255, 0.14)",
+    "--color-surface": "rgba(255, 255, 255, 0.54)",
+    "--color-surface-strong": "rgba(243, 60, 60, 0.68)",
+    "--color-surface-elevated": "rgba(246, 244, 239, 0.82)",
+    "--color-card": "rgba(255, 255, 255, 0.54)",
+    "--color-card-strong": "rgba(255, 255, 255, 0.68)",
+    "--color-chip": "rgba(255, 255, 255, 0.6)",
+    "--color-chip-hover": "rgba(255, 255, 255, 0.76)",
+    "--color-toggle-active": "rgba(10, 9, 8, 0.1)",
+    "--color-text-primary": "#0a0908",
+    "--color-text-secondary": "rgba(10, 9, 8, 0.74)",
+    "--color-text-muted": "rgba(10, 9, 8, 0.56)",
+    "--color-border": "rgba(10, 9, 8, 0.12)",
+    "--color-border-strong": "rgba(10, 9, 8, 0.18)",
+    "--color-border-inset": "rgba(255, 255, 255, 0.74)",
+    "--color-link": "rgba(10, 9, 8, 0.66)",
+    "--color-link-hover": "#0a0908",
+    "--color-overlay": "rgba(10, 9, 8, 0.4)",
+    "--shadow-soft": "0 18px 36px rgba(18, 15, 7, 0.05)",
+    "--shadow-medium": "0 14px 30px rgba(18, 15, 7, 0.04)",
+    "--shadow-large": "0 30px 60px rgba(18, 15, 7, 0.06)",
+    "--feature-plaque-shadow": "0 30px 60px rgba(18, 15, 7, 0.06),\n        inset 0 1px 0 rgba(255, 255, 255, 0.74)"
+  },
+  "meta": {
+    "siteLocale": "ru",
+    "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36",
+    "page": "/ru/customization/"
+  }
+}
