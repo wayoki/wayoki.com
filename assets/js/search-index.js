@@ -19,8 +19,8 @@
                 en: ["home", "homepage", "site", "wayoki", "start"]
             },
             description: {
-                ru: "Главная страница с DevTools для дизайнеров и свежими обновлениями.",
-                en: "Homepage with DevTools for designers and the latest updates."
+                ru: "Главная страница проекта со свежими обновлениями.",
+                en: "Project homepage with the latest updates."
             }
         },
         {
@@ -33,16 +33,16 @@
                 en: "/en/#game-title"
             },
             label: {
-                ru: "DevTools",
-                en: "DevTools"
+                ru: "Kaidan",
+                en: "Kaidan"
             },
             keywords: {
-                ru: ["devtools", "инструменты", "для дизайнеров", "кастомизация", "кастомные визуалы", "редактор темы"],
-                en: ["devtools", "tools", "for designers", "customization", "custom visuals", "theme editor"]
+                ru: ["kaidan", "проект", "игра", "обновления", "wayoki"],
+                en: ["kaidan", "project", "game", "updates", "wayoki"]
             },
             description: {
-                ru: "Инструментарий WAYOKI для редактирования и публикации кастомных визуалов сайта.",
-                en: "WAYOKI toolkit for editing and publishing custom site visuals."
+                ru: "Главный проект WAYOKI и его текущие обновления.",
+                en: "WAYOKI's main project and its current updates."
             }
         },
         {

@@ -30,17 +30,6 @@ function normalizeTheme(theme) {
         return themeRuntime.normalizeTheme(theme);
     }
 
-    const externalRegistry =
-        window.WayokiThemeRegistry &&
-        window.WayokiThemeRegistry.themeCatalog &&
-        typeof window.WayokiThemeRegistry.themeCatalog === "object"
-            ? window.WayokiThemeRegistry.themeCatalog
-            : null;
-
-    if (externalRegistry && Object.prototype.hasOwnProperty.call(externalRegistry, theme)) {
-        return theme;
-    }
-
     return theme === "dark" ? theme : "light";
 }
 
@@ -64,7 +53,6 @@ function applyTheme(theme) {
     }
 
     document.documentElement.dataset.theme = nextTheme;
-    document.documentElement.setAttribute("data-theme-selection", nextTheme);
     return nextTheme;
 }
 
@@ -84,65 +72,6 @@ function selectTheme(theme) {
     return nextTheme;
 }
 
-function getThemeCatalog() {
-    if (themeRuntime && themeRuntime.themeCatalog && typeof themeRuntime.themeCatalog === "object") {
-        return themeRuntime.themeCatalog;
-    }
-
-    return {};
-}
-
-function getThemeMeta(theme) {
-    if (themeRuntime && typeof themeRuntime.getThemeMeta === "function") {
-        return themeRuntime.getThemeMeta(theme) || null;
-    }
-
-    return getThemeCatalog()[normalizeTheme(theme)] || null;
-}
-
-function getActiveTheme() {
-    if (themeRuntime && typeof themeRuntime.readActiveTheme === "function") {
-        return themeRuntime.readActiveTheme();
-    }
-
-    return normalizeTheme(
-        textValue(document.documentElement.getAttribute("data-theme-selection")) || textValue(document.documentElement.dataset.theme)
-    );
-}
-
-function isAuthorTheme(theme) {
-    const themeMeta = getThemeMeta(theme);
-
-    return Boolean(themeMeta && themeMeta.group === "author");
-}
-
-function getThemeDisplayLabel(theme) {
-    const themeMeta = getThemeMeta(theme);
-    const explicitLabel = textValue(themeMeta && themeMeta.label);
-
-    if (explicitLabel) {
-        return explicitLabel;
-    }
-
-    if (theme === "light") {
-        return "Light";
-    }
-
-    if (theme === "dark") {
-        return "Dark";
-    }
-
-    return theme;
-}
-
-function getAuthorThemeEntries() {
-    return Object.entries(getThemeCatalog()).filter((entry) => {
-        const meta = entry[1];
-
-        return meta && meta.group === "author";
-    });
-}
-
 function detectLocale() {
     const pathname = window.location.pathname.toLowerCase();
 
@@ -155,54 +84,8 @@ function isArchivePage() {
     return pathname.endsWith("/news") || pathname.includes("/news/");
 }
 
-function isCustomizationRoute() {
-    const pathname = window.location.pathname.toLowerCase().replace(/\/+$/u, "");
-
-    return pathname === "/ru/customization" || pathname === "/en/customization";
-}
-
 function textValue(value) {
     return typeof value === "string" ? value.trim() : "";
-}
-
-function normalizeAuthorLink(value) {
-    const rawValue = textValue(value);
-
-    if (!rawValue) {
-        return "";
-    }
-
-    let candidate = rawValue.replace(/^@+/u, "");
-
-    if (!candidate) {
-        return "";
-    }
-
-    if (/^\/\//u.test(candidate)) {
-        candidate = `https:${candidate}`;
-    } else if (!/^[a-z][a-z0-9+.-]*:/iu.test(candidate)) {
-        if (!/[./]/u.test(candidate)) {
-            return "";
-        }
-
-        candidate = `https://${candidate.replace(/^\/+/u, "")}`;
-    }
-
-    try {
-        const url = new URL(candidate);
-
-        if (url.protocol !== "https:" && url.protocol !== "http:") {
-            return "";
-        }
-
-        if (!textValue(url.hostname) || !url.hostname.includes(".")) {
-            return "";
-        }
-
-        return url.toString();
-    } catch (error) {
-        return "";
-    }
 }
 
 function normalizeWhitespace(value) {
@@ -837,14 +720,11 @@ function prefetchNews(locale, options = {}) {
 applyTheme(readStoredTheme());
 
 document.addEventListener("DOMContentLoaded", () => {
-    let themeButtons = document.querySelectorAll("[data-theme-option]");
+    const themeButtons = document.querySelectorAll("[data-theme-option]");
     const themeMenuToggle = document.querySelector("[data-theme-menu-toggle]");
     const themeMenu = document.querySelector("[data-theme-menu]");
-    const customThemeToggle = document.querySelector("[data-theme-custom-toggle]");
-    const customThemeList = document.querySelector("[data-theme-custom-list]");
     const locale = detectLocale();
     const archiveView = isArchivePage();
-    const customizationRoute = isCustomizationRoute();
     const newsStore = new Map();
     const elements = {
         newsSection: document.getElementById("news"),
@@ -910,82 +790,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
             button.setAttribute("aria-pressed", String(isActive));
         });
-
-        if (customThemeToggle) {
-            customThemeToggle.setAttribute("aria-pressed", String(isAuthorTheme(theme)));
-        }
-    }
-
-    function buildThemeButton(theme, className) {
-        const button = document.createElement("div");
-        const copy = document.createElement("span");
-        const label = document.createElement("span");
-        const themeMeta = getThemeMeta(theme);
-        const authorName = textValue(themeMeta && themeMeta.authorName);
-        const authorLink = normalizeAuthorLink(themeMeta && themeMeta.authorLink);
-
-        button.className = className;
-        button.tabIndex = 0;
-        button.setAttribute("role", "button");
-        button.dataset.themeOption = theme;
-        button.setAttribute("aria-pressed", "false");
-        button.setAttribute("aria-label", authorName ? `${getThemeDisplayLabel(theme)} — ${authorName}` : getThemeDisplayLabel(theme));
-
-        copy.className = "theme-button-copy";
-        label.className = "theme-button-label";
-        label.textContent = getThemeDisplayLabel(theme);
-        copy.append(label);
-
-        if (authorName) {
-            const meta = authorLink ? document.createElement("a") : document.createElement("span");
-
-            meta.className = authorLink ? "theme-button-meta theme-button-meta-link" : "theme-button-meta";
-            if (authorLink) {
-                meta.href = authorLink;
-                meta.target = "_blank";
-                meta.rel = "noopener noreferrer";
-                meta.dataset.themeAuthorLink = "true";
-            }
-            meta.textContent = authorName;
-            copy.append(meta);
-        }
-
-        button.append(copy);
-
-        return button;
-    }
-
-    function populateCustomThemeList() {
-        if (!customThemeList) {
-            return;
-        }
-
-        customThemeList.textContent = "";
-
-        getAuthorThemeEntries().forEach(([themeName]) => {
-            customThemeList.append(
-                buildThemeButton(themeName, "theme-button theme-button-option theme-button-option-custom")
-            );
-        });
-
-        themeButtons = document.querySelectorAll("[data-theme-option]");
-        const activeTheme = getActiveTheme() || readStoredTheme();
-
-        if (customThemeToggle) {
-            customThemeToggle.hidden = !customThemeList.children.length;
-            customThemeToggle.setAttribute("aria-expanded", String(isAuthorTheme(activeTheme)));
-        }
-
-        customThemeList.hidden = !customThemeList.children.length || !isAuthorTheme(activeTheme);
-    }
-
-    function setCustomThemeListOpen(nextOpen) {
-        if (!customThemeList || !customThemeToggle || customThemeToggle.hidden) {
-            return;
-        }
-
-        customThemeList.hidden = !nextOpen;
-        customThemeToggle.setAttribute("aria-expanded", String(nextOpen));
     }
 
     function setThemeMenuOpen(nextOpen) {
@@ -995,22 +799,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
         themeMenu.hidden = !nextOpen;
         themeMenuToggle.setAttribute("aria-expanded", String(nextOpen));
-
-        if (!nextOpen && !isAuthorTheme(getActiveTheme())) {
-            setCustomThemeListOpen(false);
-        }
     }
 
-    populateCustomThemeList();
-
-    const initialTheme = customizationRoute
-        ? getActiveTheme() || readStoredTheme()
-        : applyTheme(readStoredTheme());
-
-    const activeTheme = getActiveTheme() || initialTheme;
-
-    syncThemeButtons(activeTheme);
-    setCustomThemeListOpen(isAuthorTheme(activeTheme));
+    syncThemeButtons(applyTheme(readStoredTheme()));
 
     if (themeMenuToggle && themeMenu) {
         setThemeMenuOpen(false);
@@ -1032,27 +823,16 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    if (customThemeToggle && customThemeList) {
-        customThemeToggle.addEventListener("click", () => {
-            setCustomThemeListOpen(customThemeList.hidden);
-        });
-    }
-
     document.addEventListener("click", (event) => {
-        if (event.target.closest("[data-theme-author-link]")) {
-            return;
-        }
-
         const button = event.target.closest("[data-theme-option]");
 
         if (!button) {
             return;
         }
 
-        const nextTheme = customizationRoute ? applyTheme(button.dataset.themeOption) : selectTheme(button.dataset.themeOption);
+        const nextTheme = selectTheme(button.dataset.themeOption);
 
         syncThemeButtons(nextTheme);
-        setCustomThemeListOpen(isAuthorTheme(nextTheme));
     });
 
     document.addEventListener("keydown", (event) => {
@@ -1061,15 +841,13 @@ document.addEventListener("DOMContentLoaded", () => {
         if (
             button &&
             button.tagName !== "BUTTON" &&
-            !event.target.closest("[data-theme-author-link]") &&
             (event.key === "Enter" || event.key === " ")
         ) {
             event.preventDefault();
 
-            const nextTheme = customizationRoute ? applyTheme(button.dataset.themeOption) : selectTheme(button.dataset.themeOption);
+            const nextTheme = selectTheme(button.dataset.themeOption);
 
             syncThemeButtons(nextTheme);
-            setCustomThemeListOpen(isAuthorTheme(nextTheme));
             return;
         }
 

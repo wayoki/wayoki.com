@@ -2,40 +2,71 @@
 html[data-theme="light"] {
     --theme-color-scheme: light;
 
-    --color-accent: #d31717;
-    --color-accent-hover: #d31717;
+    --theme-accent: #d31717;
+    --theme-accent-hover: #d31717;
 
-    --color-bg: #f8f6f1;
-    --color-bg-secondary: #f1ede5;
-    --color-bg-tertiary: #ebe7de;
-    --color-bg-highlight: rgba(255, 255, 255, 0.86);
-    --color-bg-glow: rgba(255, 255, 255, 0.24);
-    --color-bg-accent: rgba(255, 255, 255, 0.14);
+    --theme-bg: #f8f6f1;
+    --theme-bg-2: #f1ede5;
+    --theme-bg-3: #ebe7de;
+    --page-bg-top: #f8f6f1;
+    --page-bg-middle: #f1ede5;
+    --page-bg-bottom: #ebe7de;
+    --page-bg-highlight: rgba(255, 255, 255, 0.86);
+    --page-bg-glow: rgba(255, 255, 255, 0.24);
+    --page-bg-accent: rgba(255, 255, 255, 0.14);
 
-    --color-surface: rgba(255, 255, 255, 0.54);
-    --color-surface-strong: rgba(255, 255, 255, 0.68);
-    --color-surface-elevated: rgba(246, 244, 239, 0.82);
-    --color-card: var(--color-surface);
-    --color-card-strong: var(--color-surface-strong);
-    --color-chip: rgba(255, 255, 255, 0.6);
-    --color-chip-hover: rgba(255, 255, 255, 0.76);
-    --color-toggle-active: rgba(10, 9, 8, 0.1);
+    --theme-surface: rgba(255, 255, 255, 0.54);
+    --theme-surface-strong: rgba(255, 255, 255, 0.68);
+    --card-bg: rgba(255, 255, 255, 0.54);
+    --card-bg-strong: rgba(255, 255, 255, 0.68);
+    --surface-elevated: rgba(246, 244, 239, 0.82);
+    --chip-bg: rgba(255, 255, 255, 0.6);
+    --chip-hover-bg: rgba(255, 255, 255, 0.76);
+    --theme-active: rgba(10, 9, 8, 0.1);
 
-    --color-text-primary: #0a0908;
-    --color-text-secondary: rgba(10, 9, 8, 0.74);
-    --color-text-muted: rgba(10, 9, 8, 0.56);
+    --theme-text: #0a0908;
+    --theme-text-soft: rgba(10, 9, 8, 0.74);
+    --theme-text-muted: rgba(10, 9, 8, 0.56);
+    --header-text: #0a0908;
+    --logo-text: #0a0908;
+    --card-text: #0a0908;
 
-    --color-border: rgba(10, 9, 8, 0.12);
-    --color-border-strong: rgba(10, 9, 8, 0.18);
+    --theme-border: rgba(10, 9, 8, 0.12);
+    --theme-border-strong: rgba(10, 9, 8, 0.18);
+    --layout-border: rgba(10, 9, 8, 0.12);
+    --card-border: rgba(10, 9, 8, 0.12);
+    --link-underline: rgba(10, 9, 8, 0.18);
     --color-border-inset: rgba(255, 255, 255, 0.74);
 
-    --color-link: rgba(10, 9, 8, 0.66);
-    --color-link-hover: #0a0908;
+    --theme-link: rgba(10, 9, 8, 0.66);
+    --theme-link-hover: #0a0908;
+    --card-link: rgba(10, 9, 8, 0.66);
+    --card-link-hover: #0a0908;
+    --switcher-text: rgba(10, 9, 8, 0.56);
+    --switcher-hover-text: #0a0908;
+    --switcher-active-bg: rgba(10, 9, 8, 0.1);
+    --theme-menu-text: rgba(10, 9, 8, 0.56);
+    --theme-menu-hover-text: #0a0908;
+    --footer-text: rgba(10, 9, 8, 0.56);
+    --search-bg: rgba(255, 255, 255, 0.54);
+    --search-border: rgba(10, 9, 8, 0.12);
+    --search-text: #0a0908;
+    --search-placeholder: rgba(10, 9, 8, 0.56);
+    --search-dropdown-bg: #f1ede5;
+    --search-result-hover: rgba(255, 255, 255, 0.68);
+    --search-result-active: rgba(10, 9, 8, 0.1);
+    --search-highlight-bg: rgba(10, 9, 8, 0.1);
+    --search-highlight-text: #0a0908;
+    --button-bg: rgba(10, 9, 8, 0.1);
+    --button-text: #0a0908;
+    --button-border: rgba(10, 9, 8, 0);
+    --button-hover-bg: rgba(255, 255, 255, 0.68);
+    --button-hover-text: #0a0908;
 
-    --color-overlay: rgba(10, 9, 8, 0.4);
-    --shadow-soft: 0 18px 36px rgba(18, 15, 7, 0.05);
-    --shadow-medium: 0 14px 30px rgba(18, 15, 7, 0.04);
-    --shadow-large: 0 30px 60px rgba(18, 15, 7, 0.06);
+    --theme-overlay: rgba(10, 9, 8, 0.4);
+    --theme-shadow-soft: 0 18px 36px rgba(18, 15, 7, 0.05);
+    --theme-shadow-medium: 0 14px 30px rgba(18, 15, 7, 0.04);
+    --theme-shadow-large: 0 30px 60px rgba(18, 15, 7, 0.06);
 
     --landing-color-bg: #000;
     --landing-color-text-primary: #fff;

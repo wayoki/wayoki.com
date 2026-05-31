@@ -1,44 +1,75 @@
 html[data-theme="dark"] {
     --theme-color-scheme: dark;
 
-    --color-accent: #d31717;
-    --color-accent-hover: #d31717;
+    --theme-accent: #d31717;
+    --theme-accent-hover: #d31717;
 
-    --color-bg: #0b0b0d;
-    --color-bg-secondary: #101114;
-    --color-bg-tertiary: #14161a;
-    --color-bg-highlight: rgba(255, 255, 255, 0);
-    --color-bg-glow: rgba(255, 255, 255, 0);
-    --color-bg-accent: rgba(255, 255, 255, 0);
+    --theme-bg: #0b0b0d;
+    --theme-bg-2: #101114;
+    --theme-bg-3: #14161a;
+    --page-bg-top: #0b0b0d;
+    --page-bg-middle: #101114;
+    --page-bg-bottom: #14161a;
+    --page-bg-highlight: rgba(255, 255, 255, 0);
+    --page-bg-glow: rgba(255, 255, 255, 0);
+    --page-bg-accent: rgba(255, 255, 255, 0);
 
-    --color-surface: rgba(20, 21, 25, 0.84);
-    --color-surface-strong: rgba(24, 25, 29, 0.92);
-    --color-surface-elevated: rgba(28, 29, 33, 0.96);
-    --color-card: var(--color-surface);
-    --color-card-strong: var(--color-surface-strong);
-    --color-chip: rgba(18, 19, 23, 0.92);
-    --color-chip-hover: rgba(25, 27, 31, 0.98);
-    --color-toggle-active: rgba(242, 238, 228, 0.16);
+    --theme-surface: rgba(20, 21, 25, 0.84);
+    --theme-surface-strong: rgba(24, 25, 29, 0.92);
+    --card-bg: rgba(20, 21, 25, 0.84);
+    --card-bg-strong: rgba(24, 25, 29, 0.92);
+    --surface-elevated: rgba(28, 29, 33, 0.96);
+    --chip-bg: rgba(18, 19, 23, 0.92);
+    --chip-hover-bg: rgba(25, 27, 31, 0.98);
+    --theme-active: rgba(242, 238, 228, 0.16);
 
-    --color-text-primary: #f2eee4;
-    --color-text-secondary: rgba(242, 238, 228, 0.84);
-    --color-text-muted: rgba(242, 238, 228, 0.63);
+    --theme-text: #f2eee4;
+    --theme-text-soft: rgba(242, 238, 228, 0.84);
+    --theme-text-muted: rgba(242, 238, 228, 0.63);
+    --header-text: #f2eee4;
+    --logo-text: #f2eee4;
+    --card-text: #f2eee4;
 
-    --color-border: rgba(242, 238, 228, 0.13);
-    --color-border-strong: rgba(242, 238, 228, 0.22);
+    --theme-border: rgba(242, 238, 228, 0.13);
+    --theme-border-strong: rgba(242, 238, 228, 0.22);
+    --layout-border: rgba(242, 238, 228, 0.13);
+    --card-border: rgba(242, 238, 228, 0.13);
+    --link-underline: rgba(242, 238, 228, 0.22);
     --color-border-inset: rgba(255, 255, 255, 0.05);
 
-    --color-link: rgba(242, 238, 228, 0.78);
-    --color-link-hover: #fffdf7;
+    --theme-link: rgba(242, 238, 228, 0.78);
+    --theme-link-hover: #fffdf7;
+    --card-link: rgba(242, 238, 228, 0.78);
+    --card-link-hover: #fffdf7;
+    --switcher-text: rgba(242, 238, 228, 0.63);
+    --switcher-hover-text: #fffdf7;
+    --switcher-active-bg: rgba(242, 238, 228, 0.16);
+    --theme-menu-text: rgba(242, 238, 228, 0.63);
+    --theme-menu-hover-text: #fffdf7;
+    --footer-text: rgba(242, 238, 228, 0.63);
+    --search-bg: rgba(20, 21, 25, 0.84);
+    --search-border: rgba(242, 238, 228, 0.13);
+    --search-text: #f2eee4;
+    --search-placeholder: rgba(242, 238, 228, 0.63);
+    --search-dropdown-bg: #101114;
+    --search-result-hover: rgba(24, 25, 29, 0.92);
+    --search-result-active: rgba(242, 238, 228, 0.16);
+    --search-highlight-bg: rgba(242, 238, 228, 0.16);
+    --search-highlight-text: #f2eee4;
+    --button-bg: rgba(242, 238, 228, 0.16);
+    --button-text: #f2eee4;
+    --button-border: rgba(242, 238, 228, 0);
+    --button-hover-bg: rgba(24, 25, 29, 0.92);
+    --button-hover-text: #fffdf7;
 
-    --color-overlay: rgba(0, 0, 0, 0.62);
-    --shadow-soft: 0 12px 24px rgba(0, 0, 0, 0.22);
-    --shadow-medium: 0 16px 32px rgba(0, 0, 0, 0.26);
-    --shadow-large: 0 24px 56px rgba(0, 0, 0, 0.34);
+    --theme-overlay: rgba(0, 0, 0, 0.62);
+    --theme-shadow-soft: 0 12px 24px rgba(0, 0, 0, 0.22);
+    --theme-shadow-medium: 0 16px 32px rgba(0, 0, 0, 0.26);
+    --theme-shadow-large: 0 24px 56px rgba(0, 0, 0, 0.34);
 
     --page-backdrop-gradient: none;
     --feature-plaque-background: #17191c;
-    --feature-plaque-shadow: var(--shadow-large);
+    --feature-plaque-shadow: var(--theme-shadow-large);
 
     --landing-color-bg: #050607;
     --landing-color-text-primary: #fffdf7;

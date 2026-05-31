@@ -15,64 +15,123 @@
 
     /* Brand lockup tokens */
     --brand-lockup-width: auto;
-    --brand-credit-row-gap: 4px;
 
-    /* Shared semantic tokens */
+    /* Global semantic theme tokens */
+    --theme-bg: #f8f6f1;
+    --theme-bg-2: #f1ede5;
+    --theme-bg-3: #ebe7de;
+    --theme-surface: rgba(255, 255, 255, 0.54);
+    --theme-surface-strong: rgba(255, 255, 255, 0.68);
+    --theme-text: #0a0908;
+    --theme-text-soft: rgba(10, 9, 8, 0.74);
+    --theme-text-muted: rgba(10, 9, 8, 0.56);
+    --theme-accent: #d31717;
+    --theme-accent-hover: #d31717;
+    --theme-link: rgba(10, 9, 8, 0.66);
+    --theme-link-hover: #0a0908;
+    --theme-border: rgba(10, 9, 8, 0.12);
+    --theme-border-strong: rgba(10, 9, 8, 0.18);
+    --theme-active: rgba(10, 9, 8, 0.1);
+    --theme-overlay: rgba(10, 9, 8, 0.4);
+    --theme-shadow-soft: 0 18px 36px rgba(18, 15, 7, 0.05);
+    --theme-shadow-medium: 0 14px 30px rgba(18, 15, 7, 0.04);
+    --theme-shadow-large: 0 30px 60px rgba(18, 15, 7, 0.06);
+
+    /* Component aliases. These give advanced users escape hatches while
+       keeping the default visual language tied to shared semantic tokens. */
+    --page-bg-top: var(--theme-bg);
+    --page-bg-middle: var(--theme-bg-2);
+    --page-bg-bottom: var(--theme-bg-3);
+    --page-bg: var(--page-bg-top);
+    --page-bg-2: var(--page-bg-middle);
+    --page-bg-3: var(--page-bg-bottom);
+    --page-bg-highlight: rgba(255, 255, 255, 0.86);
+    --page-bg-glow: rgba(255, 255, 255, 0.24);
+    --page-bg-accent: rgba(255, 255, 255, 0.14);
+
+    --header-bg: var(--theme-bg);
+    --header-text: #0a0908;
+    --logo-text: var(--header-text);
+    --layout-border: rgba(10, 9, 8, 0.12);
+    --header-border: var(--layout-border);
+    --card-bg: rgba(255, 255, 255, 0.54);
+    --card-bg-strong: rgba(255, 255, 255, 0.68);
+    --card-text: #0a0908;
+    --card-border: rgba(10, 9, 8, 0.12);
+    --card-link: rgba(10, 9, 8, 0.66);
+    --card-link-hover: #0a0908;
+    --surface-elevated: rgba(246, 244, 239, 0.82);
+    --chip-bg: var(--theme-surface);
+    --chip-hover-bg: var(--theme-surface-strong);
+    --footer-text: rgba(10, 9, 8, 0.56);
+    --footer-border: var(--layout-border);
+    --link-underline: rgba(10, 9, 8, 0.18);
+    --switcher-text: rgba(10, 9, 8, 0.56);
+    --switcher-hover-text: #0a0908;
+    --switcher-active-bg: rgba(10, 9, 8, 0.1);
+    --theme-menu-text: rgba(10, 9, 8, 0.56);
+    --theme-menu-hover-text: #0a0908;
+    --search-bg: rgba(255, 255, 255, 0.54);
+    --search-border: rgba(10, 9, 8, 0.12);
+    --search-text: #0a0908;
+    --search-placeholder: rgba(10, 9, 8, 0.56);
+    --search-dropdown-bg: #f1ede5;
+    --search-result-hover: rgba(255, 255, 255, 0.68);
+    --search-result-active: rgba(10, 9, 8, 0.1);
+    --search-highlight-bg: rgba(10, 9, 8, 0.1);
+    --search-highlight-text: #0a0908;
+    --search-dropdown-shadow: var(--theme-shadow-large);
+    --button-bg: rgba(10, 9, 8, 0.1);
+    --button-text: #0a0908;
+    --button-border: rgba(10, 9, 8, 0);
+    --button-hover-bg: rgba(255, 255, 255, 0.68);
+    --button-hover-text: #0a0908;
+
+    /* Compatibility aliases for legacy theme names. */
+    --color-accent: var(--theme-accent);
+    --color-accent-hover: var(--theme-accent-hover);
+    --color-bg: var(--theme-bg);
+    --color-bg-secondary: var(--theme-bg-2);
+    --color-bg-tertiary: var(--theme-bg-3);
+    --color-bg-highlight: var(--page-bg-highlight);
+    --color-bg-glow: var(--page-bg-glow);
+    --color-bg-accent: var(--page-bg-accent);
+    --color-surface: var(--theme-surface);
+    --color-surface-strong: var(--theme-surface-strong);
+    --color-surface-elevated: var(--surface-elevated);
+    --color-card: var(--card-bg);
+    --color-card-strong: var(--card-bg-strong);
+    --color-chip: var(--chip-bg);
+    --color-chip-hover: var(--chip-hover-bg);
+    --color-toggle-active: var(--theme-active);
+    --color-text-primary: var(--theme-text);
+    --color-text-secondary: var(--theme-text-soft);
+    --color-text-muted: var(--theme-text-muted);
+    --color-border: var(--theme-border);
+    --color-border-strong: var(--link-underline);
+    --color-border-inset: rgba(255, 255, 255, 0.74);
+    --color-link: var(--theme-link);
+    --color-link-hover: var(--theme-link-hover);
+    --color-overlay: var(--theme-overlay);
+    --shadow-soft: var(--theme-shadow-soft);
+    --shadow-medium: var(--theme-shadow-medium);
+    --shadow-large: var(--theme-shadow-large);
+
+    /* Shared system tokens */
     --color-mask-visible: #fff;
     --color-mask-hidden: #000;
-    --color-success: #2f7d4d;
-    --color-warning: #a56b1f;
-    --color-danger: #b92a2a;
 
     /* Derived gradients and effects built from semantic primitives */
     --page-bg-gradient:
-        radial-gradient(circle at top, var(--color-bg-highlight) 0%, rgba(255, 255, 255, 0) 34%),
-        linear-gradient(180deg, var(--color-bg) 0%, var(--color-bg-secondary) 48%, var(--color-bg-tertiary) 100%);
+        radial-gradient(circle at top, var(--page-bg-highlight) 0%, rgba(255, 255, 255, 0) 34%),
+        linear-gradient(180deg, var(--page-bg-top) 0%, var(--page-bg-middle) 48%, var(--page-bg-bottom) 100%);
     --page-backdrop-gradient:
-        radial-gradient(circle at 50% -12%, var(--color-bg-glow) 0%, rgba(255, 255, 255, 0) 42%),
-        radial-gradient(circle at 82% 12%, var(--color-bg-accent) 0%, rgba(255, 255, 255, 0) 22%);
+        radial-gradient(circle at 50% -12%, var(--page-bg-glow) 0%, rgba(255, 255, 255, 0) 42%),
+        radial-gradient(circle at 82% 12%, var(--page-bg-accent) 0%, rgba(255, 255, 255, 0) 22%);
     --feature-plaque-background:
-        linear-gradient(180deg, var(--color-card-strong), var(--color-card)),
-        var(--color-surface-elevated);
+        linear-gradient(180deg, var(--card-bg-strong), var(--card-bg)),
+        var(--surface-elevated);
     --feature-plaque-shadow:
-        var(--shadow-large),
+        var(--theme-shadow-large),
         inset 0 1px 0 var(--color-border-inset);
-
-    --search-bg: var(--color-chip);
-    --search-border: var(--color-border);
-    --search-text: var(--color-text-primary);
-    --search-placeholder: var(--color-text-muted);
-    --search-dropdown-bg: var(--color-bg-secondary);
-    --search-result-hover: var(--color-surface-elevated);
-    --search-result-active: var(--color-chip-hover);
-    --search-highlight-bg: var(--color-toggle-active);
-    --search-highlight-text: var(--color-text-primary);
-    --search-dropdown-shadow: var(--shadow-large);
-
-    --editor-bg: rgba(247, 245, 240, 0.97);
-    --editor-surface: #fffdfa;
-    --editor-surface-strong: #f1ece3;
-    --editor-border: rgba(23, 20, 16, 0.12);
-    --editor-border-strong: rgba(23, 20, 16, 0.18);
-    --editor-text: #15120f;
-    --editor-muted: rgba(21, 18, 15, 0.62);
-    --editor-control-bg: #ffffff;
-    --editor-control-hover: #f5f0e8;
-    --editor-control-text: #15120f;
-    --editor-popover-bg: #fffdfa;
-    --editor-popover-border: rgba(23, 20, 16, 0.14);
-    --editor-accent: #2a241f;
-    --editor-accent-strong: #181410;
-    --editor-overlay: rgba(17, 14, 10, 0.34);
-    --editor-shadow: 0 28px 60px rgba(20, 16, 11, 0.18);
-    --editor-highlight: rgba(21, 18, 15, 0.12);
-    --editor-highlight-strong: rgba(21, 18, 15, 0.28);
-
-    --theme-editor-overlay: var(--editor-overlay);
-    --theme-editor-panel-bg: var(--editor-bg);
-    --theme-editor-panel-border: var(--editor-border);
-    --theme-editor-panel-shadow: var(--editor-shadow);
-    --theme-editor-card-bg: var(--editor-surface);
-    --theme-editor-card-border: var(--editor-border);
-    --theme-editor-swatch-border: var(--editor-border-strong);
 }
