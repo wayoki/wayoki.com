@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="/assets/img/logo.png">
+    <script src="/collab/site-ui/theme-registry.js"></script>
+    <script src="/assets/js/theme-switcher.js"></script>
+    <script src="/assets/js/news-prefetch.js"></script>
+    <link rel="stylesheet" href="/assets/css/theme.css">
+    <link rel="stylesheet" href="/assets/css/base.css">
+    <link rel="stylesheet" href="/assets/css/landing.css">
+    <title>WAYOKI</title>
+</head>
+<body>
+    <section class="intro">
+        <div class="intro-content">
+            <div class="typing">
+                <span id="site" data-text=""></span>
+                <span class="cursor" aria-hidden="true"></span>
+            </div>
+
+            <div class="loading">
+                <span id="loading"></span>
+                <button class="start-button" type="button" hidden>
+                    <span class="start-button-label" data-text="[START]">[START]</span>
+                </button>
+                <div class="language-picker" hidden aria-label="Choose language">
+                    <button class="language-option" type="button" data-lang="ru">РУС</button>
+                    <span class="language-divider" aria-hidden="true">/</span>
+                    <button class="language-option" type="button" data-lang="en">ENG</button>
+                </div>
+            </div>
+        </div>
+    </section>
+    <a
+        class="media-link"
+        href="https://t.me/wayoki"
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="Open Wayoki Telegram"
+    >
+        <span class="media-link-jp">私のソーシャルメディア</span>
+    </a>
+    <main class="content"></main>
+    <script src="/assets/js/landing.js"></script>
+</body>
+</html>

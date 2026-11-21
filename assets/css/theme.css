@@ -1,0 +1,9 @@
+/*
+ * Theme system manifest.
+ * Core UI lives in base.css, localized.css and landing.css.
+ * Editable theme packs live in /collab/site-ui/.
+ */
+@layer theme-tokens, theme-packs;
+
+@import url("/assets/css/theme-tokens.css") layer(theme-tokens);
+@import url("/collab/site-ui/themes.css") layer(theme-packs);
